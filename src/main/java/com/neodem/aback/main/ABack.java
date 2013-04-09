@@ -1,14 +1,14 @@
 package com.neodem.aback.main;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.log4j.Logger;
 
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.PropertiesCredentials;
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
 import com.neodem.aback.aws.glacier.DefaultFileIO;
 import com.neodem.aback.aws.glacier.FileIO;
 
@@ -22,9 +22,8 @@ public class ABack {
 	
 	public ABack(String[] args) throws IOException {
 		Path root = Paths.get(args[0]);
-		
-		Path props = root.resolve("AwsCredentials.properties");
-		AWSCredentials creds = new PropertiesCredentials(Files.newInputStream(props));
+		AWSCredentialsProvider credsprovider = new ClasspathPropertiesFileCredentialsProvider();
+		AWSCredentials creds = credsprovider.getCredentials();
 		FileIO io = new DefaultFileIO(creds, args[2]);
 		Path path = root.resolve("testFile");
 		String archiveID = io.writeFile(path, args[1]);
