@@ -1,10 +1,12 @@
-package com.neodem.aback.id;
+package com.neodem.aback.service.id;
 
 import java.nio.file.Path;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.amazonaws.auth.AWSCredentials;
 import com.neodem.aback.aws.db.DB;
+import com.neodem.aback.aws.db.DefaultDBService;
 
 /**
  * will simply retrn an integer key value prefixed by a string
@@ -13,6 +15,8 @@ import com.neodem.aback.aws.db.DB;
  * 
  */
 public class AwsBackedIdService implements IdService {
+	
+	private static final String DOMAINNAME = "com.neodem.aback.idService";
 
 	private static final String ITEMNAME = "AwsBackedIdServiceItem";
 	private static final String LARGESTID = "LargestId";
@@ -20,11 +24,10 @@ public class AwsBackedIdService implements IdService {
 
 	private DB db;
 
-	public AwsBackedIdService(DB db) {
-		this.db = db;
+	public AwsBackedIdService(AWSCredentials creds) {
+		db = new DefaultDBService(creds, DOMAINNAME);
 	}
 
-	@Override
 	public String makeIdForPath(Path path) {
 		String id = nextId().toString();
 		return KEYPREFIX + id;
@@ -40,5 +43,11 @@ public class AwsBackedIdService implements IdService {
 		db.updateValue(ITEMNAME, LARGESTID, nextId.toString());
 
 		return nextId;
+	}
+
+	@Override
+	public FileId makeIdForPath(Path sourceRoot, Path file) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

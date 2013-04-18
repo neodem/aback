@@ -16,26 +16,32 @@ import com.amazonaws.services.simpledb.model.Item;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
 
+/**
+ * init the service to connect to a domain...
+ * @author vfumo
+ *
+ */
 public class DefaultDBService implements DB {
 
-	private static final String DOMAINNAME = "com.neodem.aback.main";
-
 	private AmazonSimpleDB sdb;
+	private String domain;
 
-	public DefaultDBService(AWSCredentials creds) {
+	public DefaultDBService(AWSCredentials creds, String domain) {
+		this.domain = domain;
+		
 		sdb = new AmazonSimpleDBClient(creds);
 		Region usWest2 = Region.getRegion(Regions.US_WEST_2);
 		sdb.setRegion(usWest2);
 
 		List<String> domainNames = sdb.listDomains().getDomainNames();
-		if (!domainNames.contains(DOMAINNAME)) {
-			sdb.createDomain(new CreateDomainRequest(DOMAINNAME));
+		if (!domainNames.contains(domain)) {
+			sdb.createDomain(new CreateDomainRequest(domain));
 		}
 	}
 
 	@Override
 	public String getValue(String itemId, String key) {
-		GetAttributesRequest req = new GetAttributesRequest(DOMAINNAME, itemId);
+		GetAttributesRequest req = new GetAttributesRequest(domain, itemId);
 		req.setAttributeNames(Collections.singleton(key));
 		GetAttributesResult result = sdb.getAttributes(req);
 		List<Attribute> attributes = result.getAttributes();
@@ -47,7 +53,7 @@ public class DefaultDBService implements DB {
 
 	@Override
 	public Item getItemById(String itemId) {
-		String selectExpression = "select * from `" + DOMAINNAME + "` where ID = '" + itemId + "'";
+		String selectExpression = "select * from `" + domain + "` where ID = '" + itemId + "'";
 		SelectRequest selectRequest = new SelectRequest(selectExpression);
 		SelectResult result = sdb.select(selectRequest);
 		List<Item> items = result.getItems();

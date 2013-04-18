@@ -2,6 +2,13 @@ package com.neodem.aback.aws.db;
 
 import com.amazonaws.services.simpledb.model.Item;
 
+/**
+ * note an Item is like a row in the database
+ * the values are keyed
+ * 
+ * @author vfumo
+ *
+ */
 public interface DB {
 	
 	public Item getItemById(String itemId);

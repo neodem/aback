@@ -15,14 +15,14 @@ import com.amazonaws.services.glacier.transfer.UploadResult;
  * @author vfumo
  * 
  */
-public class DefaultFileIO implements FileIO {
+public class DefaultGlacierFileIO implements GlacierFileIO {
 
-	private static Logger log = Logger.getLogger(DefaultFileIO.class);
+	private static Logger log = Logger.getLogger(DefaultGlacierFileIO.class);
 
 	private AWSCredentials creds;
 	private AmazonGlacierClient client;
 
-	public DefaultFileIO(AWSCredentials creds, String endpoint) throws IOException {
+	public DefaultGlacierFileIO(AWSCredentials creds, String endpoint) throws IOException {
 		this.creds = creds;
 		client = new AmazonGlacierClient(creds);
 		client.setEndpoint(endpoint);
