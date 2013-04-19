@@ -17,21 +17,8 @@ public interface DB {
 	 * @param itemId
 	 * @return
 	 */
-	public Item getItemById(String itemId);
+	public Item getItem(String itemId);
 	
-	public String getValue(String itemId, String key);
-	public String setValue(String itemId, String key, String value);
-	
-	/**
-	 * will update a value or set it anew
-	 * 
-	 * @param item
-	 * @param key
-	 * @param value
-	 * @return old value
-	 */
-	public String updateValue(String itemId, String key, String value);
-
 	public boolean itemExists(String itemId);
 
 	public void saveItem(Item item);

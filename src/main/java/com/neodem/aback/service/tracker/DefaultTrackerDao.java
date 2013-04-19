@@ -18,7 +18,7 @@ public class DefaultTrackerDao implements TrackerDao {
 
 	@Override
 	public TrackerMetaItem getMeta(FileId fileId) {
-		Item item = dbService.getItemById(fileId.getHash());
+		Item item = dbService.getItem(fileId.getHash());
 		if (item == null)
 			return null;
 		return makeMetaForItem(item);
@@ -26,7 +26,7 @@ public class DefaultTrackerDao implements TrackerDao {
 
 	@Override
 	public void setMeta(FileId fileId, TrackerMetaItem meta) {
-		Item item = dbService.getItemById(fileId.getHash());
+		Item item = dbService.getItem(fileId.getHash());
 		Collection<Attribute> atts = DbUtil.makeAttributeCollection(meta.getMetaMap());
 		item.setAttributes(atts);
 		dbService.saveItem(item);
