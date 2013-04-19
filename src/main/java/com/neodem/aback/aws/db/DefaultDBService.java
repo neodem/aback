@@ -86,4 +86,16 @@ public class DefaultDBService implements DB, InitializingBean {
 	public void setAwsCredentials(AWSCredentials awsCredentials) {
 		this.awsCredentials = awsCredentials;
 	}
+
+	@Override
+	public boolean itemExists(String itemId) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void saveItem(Item item) {
+		// TODO Auto-generated method stub
+		
+	}
 }

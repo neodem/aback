@@ -11,6 +11,12 @@ import com.amazonaws.services.simpledb.model.Item;
  */
 public interface DB {
 	
+	/**
+	 * return null if Item not found
+	 * 
+	 * @param itemId
+	 * @return
+	 */
 	public Item getItemById(String itemId);
 	
 	public String getValue(String itemId, String key);
@@ -25,4 +31,8 @@ public interface DB {
 	 * @return old value
 	 */
 	public String updateValue(String itemId, String key, String value);
+
+	public boolean itemExists(String itemId);
+
+	public void saveItem(Item item);
 }
