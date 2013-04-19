@@ -1,18 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
-  xmlns:context="http://www.springframework.org/schema/context"
-  xsi:schemaLocation="
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
         http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
         http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
- 
-  <bean id="applicationContextUtils" class="com.neodem.aback.spring.ApplicationContextUtils"/>
- 
-  <bean id="helloWorld" class="com.javapapers.spring.HelloWorld" />
- 
-  <bean id="strHelloWorld" class="java.lang.String">
-    <constructor-arg value="Hello World" />
-  </bean>
- 
+
+	<bean
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>AwsCredentials.properties</value>
+				<value>aback.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="awsCredentials" class="com.amazonaws.auth.BasicAWSCredentials">
+		<constructor-arg index="0" value="${aback.aws.accessKey}" />
+		<constructor-arg index="1" value="${aback.aws.secretKey}" />
+	</bean>
+
+	<bean id="amazonGlacierClient" class="com.amazonaws.services.glacier.AmazonGlacierClient">
+		<constructor-arg index="0" ref="awsCredentials" />
+		<property name="endpoint" value="${aback.aws.endpoint}" />
+	</bean>
+
+	<bean id="glacierFileIO" class="com.neodem.aback.aws.glacier.DefaultGlacierFileIO">
+		<property name="awsCredentials" ref="awsCredentials" />
+		<property name="amazonGlacierClient" ref="amazonGlacierClient" />
+	</bean>
+
+	<bean id="scannerService" class="com.neodem.aback.service.scanner.InMemoryScanner" />
+
+	<bean id="trackerDao" class="com.neodem.aback.service.tracker.DefaultTrackerDao">
+		<property name="dbService" ref="dbService-tracker" />
+	</bean>
+
+	<bean id="trackerService" class=" com.neodem.aback.service.tracker.DefaultTrackerService">
+		<property name="trackerDao" ref="trackerDao" />
+	</bean>
+
+	<bean id="idService" class="com.neodem.aback.service.id.AwsBackedIdService">
+		<property name="dbService" ref="dbService-id" />
+	</bean>
+
+	<bean id="dbService-id" class="com.neodem.aback.aws.db.DefaultDBService">
+		<property name="awsCredentials" ref="awsCredentials" />
+		<property name="domain" value="${aback.idservice.aws.domain}" />
+	</bean>
+
+	<bean id="dbService-tracker" class="com.neodem.aback.aws.db.DefaultDBService">
+		<property name="awsCredentials" ref="awsCredentials" />
+		<property name="domain" value="${aback.trackerservice.aws.domain}" />
+	</bean>
+
+	<bean id="aback" class="com.neodem.aback.main.ABack">
+		<property name="glacierFileIo" ref="glacierFileIO" />
+		<property name="scannerService" ref="scannerService" />
+		<property name="trackerService" ref="trackerService" />
+		<property name="idService" ref="idService" />
+	</bean>
+
 </beans>

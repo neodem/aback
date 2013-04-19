@@ -1,6 +1,5 @@
 package com.neodem.aback.aws.glacier;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Date;
 
@@ -19,14 +18,8 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 
 	private static Logger log = Logger.getLogger(DefaultGlacierFileIO.class);
 
-	private AWSCredentials creds;
-	private AmazonGlacierClient client;
-
-	public DefaultGlacierFileIO(AWSCredentials creds, String endpoint) throws IOException {
-		this.creds = creds;
-		client = new AmazonGlacierClient(creds);
-		client.setEndpoint(endpoint);
-	}
+	private AWSCredentials awsCredentials;
+	private AmazonGlacierClient amazonGlacierClient;
 
 	/*
 	 * (non-Javadoc)
@@ -38,13 +31,21 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 
 		UploadResult result;
 		try {
-			ArchiveTransferManager atm = new ArchiveTransferManager(client, creds);
+			ArchiveTransferManager atm = new ArchiveTransferManager(amazonGlacierClient, awsCredentials);
 			result = atm.upload(vaultName, "my archive " + (new Date()), path.toFile());
 		} catch (Exception e) {
 			System.err.println(e);
 			return null;
 		}
 		return result.getArchiveId();
+	}
+
+	public void setAwsCredentials(AWSCredentials awsCredentials) {
+		this.awsCredentials = awsCredentials;
+	}
+
+	public void setAmazonGlacierClient(AmazonGlacierClient amazonGlacierClient) {
+		this.amazonGlacierClient = amazonGlacierClient;
 	}
 
 }

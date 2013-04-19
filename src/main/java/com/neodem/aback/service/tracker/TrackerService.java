@@ -1,6 +1,8 @@
 package com.neodem.aback.service.tracker;
 
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Date;
 
 import com.neodem.aback.service.id.FileId;
 
@@ -15,12 +17,6 @@ public interface TrackerService {
 	 */
 	boolean shouldBackup(FileId fileId, BasicFileAttributes basicFileAttributes);
 
-	/**
-	 * associate an archiveId with a file
-	 * 
-	 * @param file
-	 * @param archiveId
-	 */
-	void updateArchiveId(FileId fileId, String archiveId);
+	void updateAll(FileId fileId, String archiveId, Path relativePath, Date date);
 
 }

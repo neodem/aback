@@ -3,6 +3,8 @@ package com.neodem.aback.aws.db;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.InitializingBean;
+
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -21,15 +23,16 @@ import com.amazonaws.services.simpledb.model.SelectResult;
  * @author vfumo
  *
  */
-public class DefaultDBService implements DB {
+public class DefaultDBService implements DB, InitializingBean {
 
-	private AmazonSimpleDB sdb;
+	private AWSCredentials awsCredentials;
 	private String domain;
 
-	public DefaultDBService(AWSCredentials creds, String domain) {
-		this.domain = domain;
-		
-		sdb = new AmazonSimpleDBClient(creds);
+	private AmazonSimpleDB sdb;
+	
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		sdb = new AmazonSimpleDBClient(awsCredentials);
 		Region usWest2 = Region.getRegion(Regions.US_WEST_2);
 		sdb.setRegion(usWest2);
 
@@ -76,4 +79,11 @@ public class DefaultDBService implements DB {
 		return null;
 	}
 
+	public void setDomain(String domain) {
+		this.domain = domain;
+	}
+
+	public void setAwsCredentials(AWSCredentials awsCredentials) {
+		this.awsCredentials = awsCredentials;
+	}
 }

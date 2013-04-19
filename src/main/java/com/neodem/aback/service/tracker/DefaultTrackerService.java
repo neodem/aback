@@ -1,10 +1,10 @@
 package com.neodem.aback.service.tracker;
 
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.util.Date;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.neodem.aback.aws.db.DB;
-import com.neodem.aback.aws.db.DefaultDBService;
 import com.neodem.aback.service.id.FileId;
 
 /**
@@ -13,24 +13,43 @@ import com.neodem.aback.service.id.FileId;
  */
 public class DefaultTrackerService implements TrackerService {
 	
-	private static final String DOMAINNAME = "com.neodem.aback.tracker";
+	private TrackerDao trackerDao;
 	
-	private TrackerDao dao;
-	
-	public DefaultTrackerService(AWSCredentials creds) {
-		//db = new DefaultDBService(creds, DOMAINNAME);
-	}
-
 	@Override
 	public boolean shouldBackup(FileId fileId, BasicFileAttributes basicFileAttributes) {
-		// TODO Auto-generated method stub
-		return false;
+		if(!trackerDao.exists(fileId)) {
+			return true;
+		}
+		
+		TrackerMetaItem meta = trackerDao.getMeta(fileId);
+		return determineBasedOnMeta(meta, basicFileAttributes);
+	}
+	
+	@Override
+	public void updateAll(FileId fileId, String archiveId, Path relativePath, Date date) {
+		TrackerMetaItem meta = trackerDao.getMeta(fileId);
+		meta.setArchiveId(archiveId);
+		meta.setBackedUpDate(date);
+		meta.setOriginalPath(relativePath);
+		trackerDao.setMeta(fileId, meta);
+	}
+	
+	private boolean determineBasedOnMeta(TrackerMetaItem meta, BasicFileAttributes atts) {
+		FileTime lastModifiedTime = atts.lastModifiedTime();
+		long lastModified = lastModifiedTime.toMillis();
+		
+		Date backedUpDate = meta.getBackedUpDate();
+		long backed = backedUpDate.getTime();
+		
+		return lastModified > backed;
 	}
 
-	@Override
-	public void updateArchiveId(FileId fileId, String archiveId) {
-		// TODO Auto-generated method stub
-		
+	public void setTrackerDao(TrackerDao trackerDao) {
+		this.trackerDao = trackerDao;
 	}
+
+
+
+
 
 }
