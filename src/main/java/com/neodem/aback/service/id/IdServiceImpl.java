@@ -12,7 +12,7 @@ import com.neodem.aback.aws.simpledb.AwsSimpleDbService;
  * @author vfumo
  * 
  */
-public class AwsBackedIdService implements IdService {
+public class IdServiceImpl implements IdService {
 
 //	private static final String ITEMNAME = "AwsBackedIdServiceItem";
 //	private static final String LARGESTID = "LargestId";

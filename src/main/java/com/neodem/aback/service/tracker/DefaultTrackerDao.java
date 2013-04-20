@@ -42,5 +42,4 @@ public class DefaultTrackerDao implements TrackerDao {
 	public void setDbService(AwsSimpleDbService dbService) {
 		this.dbService = dbService;
 	}
-
 }

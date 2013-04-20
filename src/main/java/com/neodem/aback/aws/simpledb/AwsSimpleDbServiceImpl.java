@@ -70,7 +70,7 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 	/**
 	 * 
 	 */
-	protected void initDomain(String domainName) {
+	public void initDomain(String domainName) {
 		List<String> domainNames = sdb.listDomains().getDomainNames();
 		if (!domainNames.contains(domainName)) {
 			sdb.createDomain(new CreateDomainRequest(domainName));
@@ -78,7 +78,7 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 		domain = domainName;
 	}
 
-	protected void removeDomain(String domainName) {
+	public void removeDomain(String domainName) {
 		List<String> domainNames = sdb.listDomains().getDomainNames();
 		if (domainNames.contains(domainName)) {
 			sdb.deleteDomain(new DeleteDomainRequest(domainName));

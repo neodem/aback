@@ -47,9 +47,4 @@ public class DefaultTrackerService implements TrackerService {
 	public void setTrackerDao(TrackerDao trackerDao) {
 		this.trackerDao = trackerDao;
 	}
-
-
-
-
-
 }

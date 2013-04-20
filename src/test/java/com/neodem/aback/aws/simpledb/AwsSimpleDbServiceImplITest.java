@@ -15,7 +15,7 @@ import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 
 public class AwsSimpleDbServiceImplITest {
 
-	private static final String TEST_DOMAINNAME = "AwsSimpleDbServiceImplTestDomain";
+	private static final String TEST_DOMAINNAME = "AwsSimpleDbServiceImplITestDomain";
 	private static AwsSimpleDbServiceImpl db;
 
 	@BeforeClass
