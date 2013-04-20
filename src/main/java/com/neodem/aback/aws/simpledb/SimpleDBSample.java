@@ -1,4 +1,4 @@
-package com.neodem.aback.aws.db;
+package com.neodem.aback.aws.simpledb;
 
 /*
  * Copyright 2010-2013 Amazon.com, Inc. or its affiliates. All Rights Reserved.

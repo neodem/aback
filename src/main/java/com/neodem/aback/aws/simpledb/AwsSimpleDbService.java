@@ -1,6 +1,4 @@
-package com.neodem.aback.aws.db;
-
-import com.amazonaws.services.simpledb.model.Item;
+package com.neodem.aback.aws.simpledb;
 
 /**
  * note an Item is like a row in the database
@@ -9,7 +7,7 @@ import com.amazonaws.services.simpledb.model.Item;
  * @author vfumo
  *
  */
-public interface DB {
+public interface AwsSimpleDbService {
 	
 	/**
 	 * return null if Item not found
@@ -22,4 +20,6 @@ public interface DB {
 	public boolean itemExists(String itemId);
 
 	public void saveItem(Item item);
+	
+	public void removeItem(Item item);
 }

@@ -71,5 +71,4 @@ public class TrackerMetaItem {
 	public void setOriginalPath(Path originalPath) {
 		this.originalPath = originalPath;
 	}
-
 }

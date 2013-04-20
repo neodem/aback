@@ -46,12 +46,12 @@
 		<property name="dbService" ref="dbService-id" />
 	</bean>
 
-	<bean id="dbService-id" class="com.neodem.aback.aws.db.DefaultDBService">
+	<bean id="dbService-id" class="com.neodem.aback.aws.simpledb.AwsSimpleDbServiceImpl">
 		<property name="awsCredentials" ref="awsCredentials" />
 		<property name="domain" value="${aback.idservice.aws.domain}" />
 	</bean>
 
-	<bean id="dbService-tracker" class="com.neodem.aback.aws.db.DefaultDBService">
+	<bean id="dbService-tracker" class="com.neodem.aback.aws.simpledb.AwsSimpleDbServiceImpl">
 		<property name="awsCredentials" ref="awsCredentials" />
 		<property name="domain" value="${aback.trackerservice.aws.domain}" />
 	</bean>

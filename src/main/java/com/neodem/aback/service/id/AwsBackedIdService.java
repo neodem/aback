@@ -4,7 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 
-import com.neodem.aback.aws.db.DB;
+import com.neodem.aback.aws.simpledb.AwsSimpleDbService;
 
 /**
  * will simply retrn an integer key value prefixed by a string
@@ -18,7 +18,7 @@ public class AwsBackedIdService implements IdService {
 //	private static final String LARGESTID = "LargestId";
 //	private static final String KEYPREFIX = "PathItem";
 
-	private DB dbService;
+	private AwsSimpleDbService dbService;
 
 //	private Integer nextId() {
 //		String largestIdString = dbService.getValue(ITEMNAME, LARGESTID);
@@ -44,7 +44,7 @@ public class AwsBackedIdService implements IdService {
 		return id;
 	}
 
-	public void setDbService(DB dbService) {
+	public void setDbService(AwsSimpleDbService dbService) {
 		this.dbService = dbService;
 	}
 }

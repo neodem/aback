@@ -1,4 +1,4 @@
-package com.neodem.aback.aws.db;
+package com.neodem.aback.aws.simpledb;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,9 +9,9 @@ import java.util.Map;
 import com.amazonaws.services.simpledb.model.Attribute;
 import com.amazonaws.services.simpledb.model.Item;
 
-public class DbUtil {
+public class AwsSimpleDbUtils {
 
-	public static Map<String, String> makeAttMap(Item item) {
+	public static Map<String, String> makeAttributeMap(Item item) {
 		if(item == null) return null;
 		
 		List<Attribute> attributes = item.getAttributes();
