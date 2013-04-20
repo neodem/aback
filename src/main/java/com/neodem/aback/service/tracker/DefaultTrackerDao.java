@@ -1,9 +1,11 @@
 package com.neodem.aback.service.tracker;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.neodem.aback.aws.simpledb.AwsSimpleDbService;
-import com.neodem.aback.aws.simpledb.Item;
+import com.neodem.aback.aws.simpledb.AwsItem;
 import com.neodem.aback.service.id.FileId;
 
 public class DefaultTrackerDao implements TrackerDao {
@@ -16,7 +18,7 @@ public class DefaultTrackerDao implements TrackerDao {
 
 	@Override
 	public TrackerMetaItem getMeta(FileId fileId) {
-		Item item = dbService.getItem(fileId.getHash());
+		AwsItem item = dbService.getItem(fileId.getHash());
 		if (item == null)
 			return null;
 		return makeMetaForItem(item);
@@ -24,7 +26,7 @@ public class DefaultTrackerDao implements TrackerDao {
 
 	@Override
 	public void setMeta(FileId fileId, TrackerMetaItem meta) {
-		Item item = new Item(fileId.getHash());
+		AwsItem item = new AwsItem(fileId.getHash());
 		
 		Map<String, String> metaMap = meta.getMetaMap();
 		for(String key : metaMap.keySet()) {
@@ -33,8 +35,20 @@ public class DefaultTrackerDao implements TrackerDao {
 		
 		dbService.saveItem(item);
 	}
+	
+	@Override
+	public Map<String, TrackerMetaItem> getAllRecords() {
+		Map<String, TrackerMetaItem> allRecords = new HashMap<String, TrackerMetaItem>();
+		Collection<AwsItem> allItems = dbService.getAll();
+		for(AwsItem item : allItems) {
+			TrackerMetaItem meta = makeMetaForItem(item);
+			allRecords.put(item.getId(), meta);
+		}
+		
+		return allRecords;
+	}
 
-	private TrackerMetaItem makeMetaForItem(Item item) {
+	private TrackerMetaItem makeMetaForItem(AwsItem item) {
 		Map<String, String> attributeMap = item.getAttributeMap();
 		return new TrackerMetaItem(attributeMap);
 	}

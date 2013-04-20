@@ -15,6 +15,7 @@ import com.neodem.aback.aws.glacier.GlacierFileIO;
 import com.neodem.aback.service.id.FileId;
 import com.neodem.aback.service.id.IdService;
 import com.neodem.aback.service.scanner.ScannerService;
+import com.neodem.aback.service.tracker.TrackerMetaItem;
 import com.neodem.aback.service.tracker.TrackerService;
 
 /**
@@ -51,10 +52,25 @@ public class ABack {
 			} else {
 				if (trackerService.shouldBackup(fileId, filesToBackup.get(absolutePath))) {
 					String archiveId = glacierFileIo.writeFile(absolutePath, vaultName);
+					log.info("backed up : " + absolutePath.toString() + " to " + vaultName + ":" + archiveId);
 					trackerService.updateAll(fileId, archiveId, relativePath, new Date());
-					log.info("backed up : " + absolutePath.toString());
+				} else {
+					log.info(absolutePath.toString() + " does not need to backup");
 				}
 			}
+		}
+		
+		printResults();
+	}
+
+	private void printResults() {
+		Map<String, TrackerMetaItem> allRecords = trackerService.getAllRecords();
+
+		System.out.println("All Records");
+		System.out.println("--------------");
+		
+		for(String id : allRecords.keySet()) {
+			System.out.println(allRecords.get(id).toString());
 		}
 	}
 

@@ -2,6 +2,8 @@ package com.neodem.aback.service.tracker;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +17,22 @@ public class TrackerMetaItem {
 	private String archiveId;
 	private Path originalPath;
 	private Date backedUpDate;
+	
+	private static DateFormat df = new SimpleDateFormat("MM-dd-YYYY hhmm");
 
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder();
+		b.append('"');
+		b.append(originalPath);
+		b.append('"');
+		b.append("||");
+		b.append(df.format(backedUpDate));
+		b.append("||");
+		b.append(archiveId);
+		return b.toString();
+	}
+	
 	public TrackerMetaItem() {
 	}
 

@@ -1,5 +1,7 @@
 package com.neodem.aback.service.tracker;
 
+import java.util.Map;
+
 import com.neodem.aback.service.id.FileId;
 
 public interface TrackerDao {
@@ -16,4 +18,5 @@ public interface TrackerDao {
 
 	void setMeta(FileId fileId, TrackerMetaItem meta);
 
+	Map<String, TrackerMetaItem> getAllRecords();
 }

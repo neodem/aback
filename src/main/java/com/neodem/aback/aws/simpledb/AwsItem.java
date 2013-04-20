@@ -8,7 +8,7 @@ import java.util.Map;
 import com.amazonaws.services.simpledb.model.Attribute;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 
-public class Item {
+public class AwsItem {
 
 	public static final String ITEMID_ATT = "itemId";
 
@@ -23,12 +23,12 @@ public class Item {
 		return b.toString();
 	}
 
-	public Item(String itemId) {
+	public AwsItem(String itemId) {
 		attributes = new HashMap<String, String>();
 		attributes.put(ITEMID_ATT, itemId);
 	}
 
-	public Item(List<Attribute> awsAttributes) {
+	public AwsItem(List<Attribute> awsAttributes) {
 		attributes = new HashMap<String, String>();
 		for (Attribute a : awsAttributes) {
 			attributes.put(a.getName(), a.getValue());

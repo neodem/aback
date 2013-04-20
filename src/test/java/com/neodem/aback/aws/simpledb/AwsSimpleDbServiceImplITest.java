@@ -42,13 +42,13 @@ public class AwsSimpleDbServiceImplITest {
 	public void saveItemShouldSaveTheItemIntoAws() throws InterruptedException {
 		String itemId = "item1";
 
-		Item testItem = new Item(itemId);
+		AwsItem testItem = new AwsItem(itemId);
 		testItem.put("att1", "att1.value");
 		db.saveItem(testItem);
 
 		Thread.sleep(5000);
 
-		Item resultItem = db.getItem(itemId);
+		AwsItem resultItem = db.getItem(itemId);
 
 		assertThat(resultItem, not(nullValue()));
 		assertThat(resultItem.getId(), is(itemId));
@@ -63,7 +63,7 @@ public class AwsSimpleDbServiceImplITest {
 
 		String itemId = "IDoExist";
 
-		Item testItem = new Item(itemId);
+		AwsItem testItem = new AwsItem(itemId);
 		db.saveItem(testItem);
 		
 		Thread.sleep(5000);
