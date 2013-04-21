@@ -11,5 +11,5 @@ public interface GlacierFileIO {
 	 * @param vaultName
 	 * @return
 	 */
-	public String writeFile(Path file, String vaultName);
+	public String writeFile(Path file, String vaultName) throws GlacierFileIOException;
 }

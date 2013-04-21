@@ -1,6 +1,5 @@
 package com.neodem.aback.main;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -12,6 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.neodem.aback.aws.glacier.GlacierFileIO;
+import com.neodem.aback.aws.glacier.GlacierFileIOException;
 import com.neodem.aback.service.id.FileId;
 import com.neodem.aback.service.id.IdService;
 import com.neodem.aback.service.scanner.ScannerService;
@@ -37,7 +37,7 @@ public class ABack {
 	private TrackerService trackerService;
 	private IdService idService;
 
-	public void process(String[] args) throws IOException {
+	public void process(String[] args) {
 		readArgs(args);
 
 		Map<Path, BasicFileAttributes> filesToBackup = scannerService.scan(sourceRoot);
@@ -51,7 +51,14 @@ public class ABack {
 				log.warn("skipped since we couldn't make a fileId : " + absolutePath.toString());
 			} else {
 				if (trackerService.shouldBackup(fileId, filesToBackup.get(absolutePath))) {
-					String archiveId = glacierFileIo.writeFile(absolutePath, vaultName);
+					String archiveId;
+					try {
+						archiveId = glacierFileIo.writeFile(absolutePath, vaultName);
+					} catch (GlacierFileIOException e) {
+						String msg = "could not upload due to : " + e.getMessage();
+						log.warn(msg);
+						continue;
+					} 
 					log.info("backed up : " + absolutePath.toString() + " to " + vaultName + ":" + archiveId);
 					trackerService.updateAll(fileId, archiveId, relativePath, new Date());
 				} else {
