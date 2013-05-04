@@ -179,7 +179,7 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 				.withChecksum(checksum).withArchiveSize(String.valueOf(fileLen));
 
 		CompleteMultipartUploadResult compResult = amazonGlacierClient.completeMultipartUpload(compRequest);
-		return compResult.getLocation();
+		return compResult.getArchiveId();
 	}
 
 	private String initiateMultipartUpload(String vaultName) {
