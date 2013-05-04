@@ -148,26 +148,23 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 			return -1;
 		}
 		
-		byte[] hmm = buf.array();
+		buf.rewind();
 		
-		byte[] bytesRead;
+		byte[] bytesToUpload;
 		if(read < LARGEFILEPARTSIZE) {
-			bytesRead = new byte[read];
+			bytesToUpload = new byte[read];
 		} else {
-			bytesRead = new byte[LARGEFILEPARTSIZE];
+			bytesToUpload = new byte[LARGEFILEPARTSIZE];
 		}
-		buf.get(bytesRead, 0, LARGEFILEPARTSIZE-1);
+		buf.get(bytesToUpload, 0, read);
 		
-		byte h = hmm[LARGEFILEPARTSIZE-1];
-		byte r = bytesRead[LARGEFILEPARTSIZE-1];
-
 		String contentRange = String.format("bytes %s-%s/*", startPosition, startPosition + read - 1);
-		String checksum = TreeHashGenerator.calculateTreeHash(new ByteArrayInputStream(bytesRead));
+		String checksum = TreeHashGenerator.calculateTreeHash(new ByteArrayInputStream(bytesToUpload));
 		byte[] binaryChecksum = BinaryUtils.fromHex(checksum);
 		binaryChecksums.add(binaryChecksum);
 		log.debug(contentRange);
 
-		UploadMultipartPartRequest partRequest = new UploadMultipartPartRequest().withVaultName(vaultName).withBody(new ByteArrayInputStream(bytesRead))
+		UploadMultipartPartRequest partRequest = new UploadMultipartPartRequest().withVaultName(vaultName).withBody(new ByteArrayInputStream(bytesToUpload))
 				.withChecksum(checksum).withRange(contentRange).withUploadId(archiveId);
 
 		UploadMultipartPartResult partResult = amazonGlacierClient.uploadMultipartPart(partRequest);
@@ -201,71 +198,4 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 	public void setAmazonGlacierClient(AmazonGlacierClient amazonGlacierClient) {
 		this.amazonGlacierClient = amazonGlacierClient;
 	}
-	
-	// private long uploadFilePart(String archiveId, InputStream fileToUpload,
-	// long startPosition, List<byte[]> binaryChecksums, String vaultName)
-	// throws IOException {
-	// byte[] buffer = new byte[Integer.valueOf(LARGEFILEPARTSIZE)];
-	//
-	// int read = fileToUpload.read(buffer, 0, buffer.length);
-	// if (read == -1) {
-	// return -1;
-	// }
-	// byte[] bytesRead = Arrays.copyOf(buffer, read);
-	//
-	// String contentRange = String.format("bytes %s-%s/*", startPosition,
-	// startPosition + read - 1);
-	// String checksum = TreeHashGenerator.calculateTreeHash(new
-	// ByteArrayInputStream(bytesRead));
-	// byte[] binaryChecksum = BinaryUtils.fromHex(checksum);
-	// binaryChecksums.add(binaryChecksum);
-	// log.debug(contentRange);
-	//
-	// UploadMultipartPartRequest partRequest = new
-	// UploadMultipartPartRequest().withVaultName(vaultName).withBody(new
-	// ByteArrayInputStream(bytesRead))
-	// .withChecksum(checksum).withRange(contentRange).withUploadId(archiveId);
-	//
-	// UploadMultipartPartResult partResult =
-	// amazonGlacierClient.uploadMultipartPart(partRequest);
-	// log.debug("Part uploaded, checksum: " + partResult.getChecksum());
-	//
-	// return startPosition + read;
-	// }
-	
-	// private String uploadParts(String archiveId, Path path, long fileLen,
-	// String vaultName) throws GlacierFileIOException {
-	// List<byte[]> binaryChecksums = new LinkedList<byte[]>();
-	// InputStream fileToUpload = null;
-	// try {
-	// fileToUpload = Files.newInputStream(path);
-	// long currentPosition = 0;
-	// while (currentPosition < fileLen) {
-	// currentPosition = uploadFilePart(archiveId, fileToUpload,
-	// currentPosition, binaryChecksums, vaultName);
-	// if (currentPosition == -1) {
-	// break;
-	// }
-	// }
-	// } catch (FileNotFoundException e) {
-	// String msg = "Could not find the upload file : " + e.getMessage();
-	// throw new GlacierFileIOException(msg, e);
-	// } catch (IOException e) {
-	// String msg = "Issue with the upload to glacier : " + e.getMessage();
-	// throw new GlacierFileIOException(msg, e);
-	// } finally {
-	// if (fileToUpload != null) {
-	// try {
-	// fileToUpload.close();
-	// } catch (IOException e) {
-	// String msg = "could not close the upload file : " + e.getMessage();
-	// throw new GlacierFileIOException(msg, e);
-	// }
-	// }
-	// }
-	//
-	// String checksum = TreeHashGenerator.calculateTreeHash(binaryChecksums);
-	// return checksum;
-	// }
-
 }

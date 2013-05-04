@@ -33,7 +33,6 @@ public class InMemoryScanner implements ScannerService {
 		
 		System.out.println(p);
 		System.out.println(b.lastModifiedTime());
-		
 	}
 
 }
