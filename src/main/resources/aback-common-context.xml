@@ -32,8 +32,6 @@
 		<property name="amazonGlacierClient" ref="amazonGlacierClient" />
 	</bean>
 
-	<bean id="scannerService" class="com.neodem.aback.service.scanner.InMemoryScanner" />
-
 	<bean id="trackerDao" class="com.neodem.aback.service.tracker.DefaultTrackerDao">
 		<property name="dbService" ref="dbService-tracker" />
 	</bean>
@@ -54,13 +52,6 @@
 	<bean id="dbService-tracker" class="com.neodem.aback.aws.simpledb.AwsSimpleDbServiceImpl">
 		<property name="awsCredentials" ref="awsCredentials" />
 		<property name="domain" value="${aback.trackerservice.aws.domain}" />
-	</bean>
-
-	<bean id="aback" class="com.neodem.aback.main.ABack">
-		<property name="glacierFileIo" ref="glacierFileIO" />
-		<property name="scannerService" ref="scannerService" />
-		<property name="trackerService" ref="trackerService" />
-		<property name="idService" ref="idService" />
 	</bean>
 
 </beans>

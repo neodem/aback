@@ -18,7 +18,7 @@ public class FileId {
 		originalPath = file;
 		String path = file.toString();
 		
-		final MessageDigest messageDigest = MessageDigest.getInstance("MD5");
+		final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
 		messageDigest.reset();
 		messageDigest.update(path.getBytes(Charset.forName("UTF8")));
 		final byte[] resultByte = messageDigest.digest();

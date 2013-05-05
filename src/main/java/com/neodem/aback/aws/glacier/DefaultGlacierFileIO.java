@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,8 +46,7 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 	/**
 	 * 5MB in bytes
 	 */
-//	private static final int FIVEMEGS = 5242880;
-	private static final int FIVEMEGS = 2242880;
+	private static final int FIVEMEGS = 5242880;
 
 	private AWSCredentials awsCredentials;
 	private AmazonGlacierClient amazonGlacierClient;
@@ -58,7 +56,7 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 	 * 
 	 * @see com.neodem.aback.aws.glacier.FileIO#writeFile(java.nio.file.Path)
 	 */
-	public String writeFile(Path path, String vaultName) throws GlacierFileIOException {
+	public String writeFile(Path path, String description, String vaultName) throws GlacierFileIOException {
 		log.info("writeFile(" + path + "," + vaultName);
 
 		long fileSize;
@@ -70,17 +68,17 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 		}
 
 		if (fileSize < FIVEMEGS) {
-			return uploadFile(path, vaultName);
+			return uploadFile(path, description, vaultName);
 		}
 
-		return uploadLargeFile(path, vaultName, fileSize);
+		return uploadLargeFile(path, description, vaultName, fileSize);
 	}
 
-	private String uploadFile(Path path, String vaultName) throws GlacierFileIOException {
+	private String uploadFile(Path path, String description, String vaultName) throws GlacierFileIOException {
 		UploadResult result;
 		try {
 			ArchiveTransferManager atm = new ArchiveTransferManager(amazonGlacierClient, awsCredentials);
-			result = atm.upload(vaultName, "my archive " + (new Date()), path.toFile());
+			result = atm.upload(vaultName, description, path.toFile());
 		} catch (AmazonServiceException e) {
 			String msg = "Issue with the upload to glacier : " + e.getMessage();
 			throw new GlacierFileIOException(msg, e);
@@ -94,17 +92,15 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 		return result.getArchiveId();
 	}
 
-	private String uploadLargeFile(Path path, String vaultName, long fileSize) throws GlacierFileIOException {
+	private String uploadLargeFile(Path path, String description, String vaultName, long fileSize) throws GlacierFileIOException {
 		log.info("writeLargeFile(" + path + "," + vaultName);
 
-		String uploadId = initiateMultipartUpload(vaultName);
+		String uploadId = initiateMultipartUpload(description, vaultName);
 		String checksum = uploadParts7(uploadId, path, fileSize, vaultName);
 		String archiveId = completeMultiPartUpload(uploadId, fileSize, checksum, vaultName);
 
 		return archiveId;
 	}
-
-
 
 	private String uploadParts7(String archiveId, Path path, long fileLen, String vaultName) throws GlacierFileIOException {
 		List<byte[]> binaryChecksums = new LinkedList<byte[]>();
@@ -147,17 +143,17 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 		if (read == -1) {
 			return -1;
 		}
-		
+
 		buf.rewind();
-		
+
 		byte[] bytesToUpload;
-		if(read < LARGEFILEPARTSIZE) {
+		if (read < LARGEFILEPARTSIZE) {
 			bytesToUpload = new byte[read];
 		} else {
 			bytesToUpload = new byte[LARGEFILEPARTSIZE];
 		}
 		buf.get(bytesToUpload, 0, read);
-		
+
 		String contentRange = String.format("bytes %s-%s/*", startPosition, startPosition + read - 1);
 		String checksum = TreeHashGenerator.calculateTreeHash(new ByteArrayInputStream(bytesToUpload));
 		byte[] binaryChecksum = BinaryUtils.fromHex(checksum);
@@ -182,9 +178,9 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 		return compResult.getArchiveId();
 	}
 
-	private String initiateMultipartUpload(String vaultName) {
-		InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest().withVaultName(vaultName)
-				.withArchiveDescription("my archive " + (new Date())).withPartSize("" + LARGEFILEPARTSIZE);
+	private String initiateMultipartUpload(String description, String vaultName) {
+		InitiateMultipartUploadRequest request = new InitiateMultipartUploadRequest().withVaultName(vaultName).withArchiveDescription(description)
+				.withPartSize("" + LARGEFILEPARTSIZE);
 
 		InitiateMultipartUploadResult result = amazonGlacierClient.initiateMultipartUpload(request);
 

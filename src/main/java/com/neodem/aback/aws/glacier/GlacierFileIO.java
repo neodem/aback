@@ -8,8 +8,9 @@ public interface GlacierFileIO {
 	 * send the file to a Glacier vault and return an archiveId
 	 * 
 	 * @param file
-	 * @param vaultName
+	 * @param description
+	 * @param vaultName 
 	 * @return
 	 */
-	public String writeFile(Path file, String vaultName) throws GlacierFileIOException;
+	public String writeFile(Path file, String description, String vaultName) throws GlacierFileIOException;
 }

@@ -22,9 +22,9 @@ import com.neodem.aback.service.tracker.TrackerService;
  * @author vfumo
  * 
  */
-public class ABack {
+public class Backup {
 
-	private static Logger log = Logger.getLogger(ABack.class);
+	private static Logger log = Logger.getLogger(Backup.class);
 
 	private static ApplicationContext appContext;
 
@@ -53,7 +53,7 @@ public class ABack {
 				if (trackerService.shouldBackup(fileId, filesToBackup.get(absolutePath))) {
 					String archiveId;
 					try {
-						archiveId = glacierFileIo.writeFile(absolutePath, vaultName);
+						archiveId = glacierFileIo.writeFile(absolutePath, fileId.getHash(), vaultName);
 					} catch (GlacierFileIOException e) {
 						String msg = "could not upload due to : " + e.getMessage();
 						log.warn(msg);
@@ -91,8 +91,8 @@ public class ABack {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		appContext = new ClassPathXmlApplicationContext("ABack-context.xml");
-		ABack aback = (ABack) appContext.getBean("aback");
+		appContext = new ClassPathXmlApplicationContext("Backup-context.xml");
+		Backup aback = (Backup) appContext.getBean("backup-main");
 		aback.process(args);
 	}
 
