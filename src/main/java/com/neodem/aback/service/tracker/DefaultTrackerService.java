@@ -6,7 +6,7 @@ import java.nio.file.attribute.FileTime;
 import java.util.Date;
 import java.util.Map;
 
-import com.neodem.aback.service.id.FileId;
+import com.neodem.aback.service.id.MetaItemId;
 
 /**
  * @author vfumo
@@ -17,34 +17,53 @@ public class DefaultTrackerService implements TrackerService {
 	private TrackerDao trackerDao;
 
 	@Override
-	public boolean shouldBackup(FileId fileId, BasicFileAttributes basicFileAttributes) {
-		if (!trackerDao.exists(fileId)) {
+	public boolean shouldBackup(String vaultName, MetaItemId fileId, BasicFileAttributes basicFileAttributes) {
+		if (!trackerDao.exists(vaultName, fileId)) {
 			return true;
 		}
 
-		TrackerMetaItem meta = trackerDao.getMeta(fileId);
+		TrackerMetaItem meta = trackerDao.getMetaItem(vaultName, fileId);
 		return determineBasedOnMeta(meta, basicFileAttributes);
 	}
 
 	@Override
-	public boolean updateAll(FileId fileId, String archiveId, Path relativePath, Date date) {
-		boolean newItem = true;
-		
+	public void updateBackedUpDate(String vaultName, MetaItemId id, Date backedUpDate) {
+		TrackerMetaItem meta = trackerDao.getMetaItem(vaultName, id);
+		if (meta != null) {
+			meta.setBackedUpDate(backedUpDate);
+			trackerDao.saveMetaItem(vaultName, id, meta);
+		}
+	}
+
+	@Override
+	public void updateArchiveId(String vaultName, MetaItemId id, String archiveId) {
+		TrackerMetaItem meta = trackerDao.getMetaItem(vaultName, id);
+		if (meta != null) {
+			meta.setArchiveId(archiveId);
+			trackerDao.saveMetaItem(vaultName, id, meta);
+		}
+	}
+
+	@Override
+	public Map<String, TrackerMetaItem> getAllRecords(String vaultName) {
+		return trackerDao.getAllItems(vaultName);
+	}
+
+	@Override
+	public void register(String vaultName, MetaItemId fileId, Path path, String archiveId, Date date) {
+
 		TrackerMetaItem meta = null;
 
-		if (trackerDao.exists(fileId)) {
-			newItem = false;
-			meta = trackerDao.getMeta(fileId);
+		if (trackerDao.exists(vaultName, fileId)) {
+			meta = trackerDao.getMetaItem(vaultName, fileId);
 		} else {
-			meta = new TrackerMetaItem();
+			meta = new TrackerMetaItem(vaultName, path);
 		}
 
 		meta.setArchiveId(archiveId);
 		meta.setBackedUpDate(date);
-		meta.setOriginalPath(relativePath);
-		trackerDao.setMeta(fileId, meta);
-		
-		return newItem;
+
+		trackerDao.saveMetaItem(vaultName, fileId, meta);
 	}
 
 	private boolean determineBasedOnMeta(TrackerMetaItem meta, BasicFileAttributes atts) {
@@ -61,8 +80,4 @@ public class DefaultTrackerService implements TrackerService {
 		this.trackerDao = trackerDao;
 	}
 
-	@Override
-	public Map<String, TrackerMetaItem> getAllRecords() {
-		return trackerDao.getAllRecords();
-	}
 }

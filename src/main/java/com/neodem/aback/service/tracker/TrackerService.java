@@ -5,7 +5,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.Map;
 
-import com.neodem.aback.service.id.FileId;
+import com.neodem.aback.service.id.MetaItemId;
 
 public interface TrackerService {
 
@@ -14,24 +14,47 @@ public interface TrackerService {
 	 * 
 	 * @param fileId
 	 * @param basicFileAttributes
+	 * 
 	 * @return
 	 */
-	boolean shouldBackup(FileId fileId, BasicFileAttributes basicFileAttributes);
+	boolean shouldBackup(String vaultName, MetaItemId fileId, BasicFileAttributes basicFileAttributes);
+
+	/**
+	 * update the backedUpDate on a meta item. If the item does not exist, this
+	 * does nothing
+	 * 
+	 * @param vaultName
+	 * @param id
+	 * @param backedUpDate
+	 */
+	void updateBackedUpDate(String vaultName, MetaItemId id, Date backedUpDate);
+
+	/**
+	 * update the archiveId on a meta item. If the item does not exist, this
+	 * does nothing
+	 * 
+	 * @param vaultName
+	 * @param id
+	 * @param archiveId
+	 */
+	void updateArchiveId(String vaultName, MetaItemId id, String archiveId);
 
 	/**
 	 * 
-	 * @param fileId
-	 * @param archiveId
-	 * @param relativePath
-	 * @param backedUpDate
-	 * @return true if this was a new record (eg. fileId does not exist)
-	 */
-	boolean updateAll(FileId fileId, String archiveId, Path relativePath, Date backedUpDate);
-	
-	/**
-	 * 
 	 * @return
 	 */
-	Map<String, TrackerMetaItem> getAllRecords();
+	Map<String, TrackerMetaItem> getAllRecords(String vaultName);
+
+	/**
+	 * register a new meta item. If one exists already we update the archiveId
+	 * and backedUpDate (relativePath and vaultName can't be changed)
+	 * 
+	 * @param vaultName
+	 * @param fileId
+	 * @param relativePath
+	 * @param archiveId
+	 * @param date
+	 */
+	void register(String vaultName, MetaItemId fileId, Path relativePath, String archiveId, Date date);
 
 }

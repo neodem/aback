@@ -5,6 +5,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.util.Collection;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -12,6 +14,7 @@ import org.junit.Test;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
+import com.neodem.aback.service.tracker.TrackerMetaItem;
 
 public class AwsSimpleDbServiceImplITest {
 
@@ -40,37 +43,60 @@ public class AwsSimpleDbServiceImplITest {
 
 	@Test
 	public void saveItemShouldSaveTheItemIntoAws() throws InterruptedException {
+		String vaultName = "testVaultName";
 		String itemId = "item1";
 
 		AwsItem testItem = new AwsItem(itemId);
-		testItem.put("att1", "att1.value");
-		db.saveItem(testItem);
+		testItem.addAttribute(TrackerMetaItem.VAULT_NAME_KEY, vaultName);
+		testItem.addAttribute("att1", "att1.value");
+		db.saveItem(vaultName, testItem);
 
 		Thread.sleep(5000);
 
-		AwsItem resultItem = db.getItem(itemId);
+		AwsItem resultItem = db.getItem(vaultName, itemId);
 
 		assertThat(resultItem, not(nullValue()));
 		assertThat(resultItem.getId(), is(itemId));
 		assertThat(resultItem.get("att1"), is("att1.value"));
 
-		db.removeItem(testItem);
+		db.removeItem(vaultName, testItem);
 	}
 
 	@Test
+	public void getAllShouldWork() throws InterruptedException {
+		String vaultName = "testVaultName";
+		String itemId = "item1";
+		
+		AwsItem testItem = new AwsItem(itemId);
+		testItem.addAttribute(TrackerMetaItem.VAULT_NAME_KEY, vaultName);
+		testItem.addAttribute("att1", "att1.value");
+		db.saveItem(vaultName, testItem);
+		
+		Thread.sleep(5000);
+		
+		Collection<AwsItem> all = db.getAll(vaultName);
+		
+		assertThat(all.size(), is(1));
+		
+		db.removeItem(vaultName, testItem);
+		
+	}
+	@Test
 	public void itemExistsShouldWork() throws InterruptedException {
-		assertThat(db.itemExists("IDontexist"), is(false));
+		String vaultName = "testVaultName";
+		assertThat(db.itemExists(vaultName, "IDontexist"), is(false));
 
 		String itemId = "IDoExist";
 
 		AwsItem testItem = new AwsItem(itemId);
-		db.saveItem(testItem);
-		
+		testItem.addAttribute(TrackerMetaItem.VAULT_NAME_KEY, vaultName);
+		db.saveItem(vaultName, testItem);
+
 		Thread.sleep(5000);
 
-		assertThat(db.itemExists(itemId), is(true));
+		assertThat(db.itemExists(vaultName, itemId), is(true));
 
-		db.removeItem(testItem);
+		db.removeItem(vaultName, testItem);
 
 	}
 

@@ -2,7 +2,6 @@ package com.neodem.aback.aws.simpledb;
 
 import java.util.Collection;
 
-
 /**
  * note an Item is like a row in the database the values are keyed
  * 
@@ -10,24 +9,39 @@ import java.util.Collection;
  * 
  */
 public interface AwsSimpleDbService {
-
 	/**
-	 * return null if Item not found
 	 * 
+	 * @param vaultName
 	 * @param itemId
 	 * @return
 	 */
-	public AwsItem getItem(String itemId);
+	public AwsItem getItem(String vaultName, String itemId);
 
-	public boolean itemExists(String itemId);
+	/**
+	 * 
+	 * @param item
+	 */
+	public void saveItem(String vaultName, AwsItem item);
 
-	public void saveItem(AwsItem item);
+	/**
+	 * 
+	 * @param item
+	 */
+	public void removeItem(String vaultName, AwsItem item);
 
-	public void removeItem(AwsItem item);
+	/**
+	 * 
+	 * @param vaultName
+	 * @return
+	 */
+	public Collection<AwsItem> getAll(String vaultName);
 
-	public void initDomain(String domainName);
+	/**
+	 * 
+	 * @param vaultName
+	 * @param itemId
+	 * @return
+	 */
+	public boolean itemExists(String vaultName, String itemId);
 
-	public void removeDomain(String domainName);
-
-	public Collection<AwsItem> getAll();
 }

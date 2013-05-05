@@ -3,5 +3,5 @@ package com.neodem.aback.service.id;
 import java.nio.file.Path;
 
 public interface IdService {
-	public FileId makeIdForPath(Path file);
+	public MetaItemId makeId(Path file);
 }

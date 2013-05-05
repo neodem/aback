@@ -8,16 +8,16 @@ import java.security.NoSuchAlgorithmException;
 
 import org.apache.commons.codec.binary.Hex;
 
-public class FileId {
-	
+public class MetaItemId {
+
 	private Path originalPath;
-	
 	private String hash;
 
-	public FileId(Path file) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+	public MetaItemId(Path file) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+
 		originalPath = file;
 		String path = file.toString();
-		
+
 		final MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
 		messageDigest.reset();
 		messageDigest.update(path.getBytes(Charset.forName("UTF8")));

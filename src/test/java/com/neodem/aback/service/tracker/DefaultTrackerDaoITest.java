@@ -1,4 +1,4 @@
-package com.neodem.aback.aws.service.tracker;
+package com.neodem.aback.service.tracker;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -21,7 +21,7 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.neodem.aback.aws.simpledb.AwsSimpleDbServiceImpl;
-import com.neodem.aback.service.id.FileId;
+import com.neodem.aback.service.id.MetaItemId;
 import com.neodem.aback.service.tracker.DefaultTrackerDao;
 import com.neodem.aback.service.tracker.TrackerMetaItem;
 
@@ -67,21 +67,21 @@ public class DefaultTrackerDaoITest {
 		Path originalPath = Paths.get("C:/", "someFilename");
 		String archiveId = "archiveId.value";
 		Date backedUpDate = new Date();
+		String vaultName = "vaultName";
 		
-		FileId fileId = new FileId(originalPath);
+		MetaItemId fileId = new MetaItemId(originalPath);
 		
-		TrackerMetaItem meta = new TrackerMetaItem();
+		TrackerMetaItem meta = new TrackerMetaItem(vaultName, originalPath);
 		meta.setArchiveId(archiveId);
 		meta.setBackedUpDate(backedUpDate);
-		meta.setOriginalPath(originalPath);
 		
-		dao.setMeta(fileId, meta);
+		dao.saveMetaItem(vaultName, fileId, meta);
 		
 		Thread.sleep(4000);
 		
-		assertThat(dao.exists(fileId), is(true));
+		assertThat(dao.exists(vaultName,fileId), is(true));
 		
-		TrackerMetaItem resultMeta = dao.getMeta(fileId);
+		TrackerMetaItem resultMeta = dao.getMetaItem(vaultName, fileId);
 		
 		assertThat(resultMeta, not(nullValue()));
 		assertThat(resultMeta.getOriginalPath(), is(originalPath));

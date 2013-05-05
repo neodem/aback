@@ -56,7 +56,7 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 	 * 
 	 * @see com.neodem.aback.aws.glacier.FileIO#writeFile(java.nio.file.Path)
 	 */
-	public String writeFile(Path path, String description, String vaultName) throws GlacierFileIOException {
+	public String writeFile(String vaultName, Path path, String description) throws GlacierFileIOException {
 		log.info("writeFile(" + path + "," + vaultName);
 
 		long fileSize;

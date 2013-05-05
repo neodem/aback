@@ -47,7 +47,7 @@ public class AwsItem {
 		return atts;
 	}
 
-	public void put(String name, String value) {
+	public void addAttribute(String name, String value) {
 		attributes.put(name, value);
 	}
 
@@ -57,5 +57,9 @@ public class AwsItem {
 
 	public Map<String, String> getAttributeMap() {
 		return attributes;
+	}
+
+	public boolean containsAttribute(String attName) {
+		return attributes.containsKey(attName);
 	}
 }

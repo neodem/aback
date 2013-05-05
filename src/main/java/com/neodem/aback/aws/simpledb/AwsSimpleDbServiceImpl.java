@@ -20,8 +20,10 @@ import com.amazonaws.services.simpledb.model.GetAttributesRequest;
 import com.amazonaws.services.simpledb.model.GetAttributesResult;
 import com.amazonaws.services.simpledb.model.Item;
 import com.amazonaws.services.simpledb.model.PutAttributesRequest;
+import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
+import com.neodem.aback.service.tracker.TrackerMetaItem;
 
 /**
  * init the service to connect to a domain...
@@ -32,7 +34,7 @@ import com.amazonaws.services.simpledb.model.SelectResult;
 public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingBean {
 
 	private static Logger log = Logger.getLogger(AwsSimpleDbServiceImpl.class);
-	
+
 	private AWSCredentials awsCredentials;
 	private String domain;
 
@@ -41,78 +43,86 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		sdb = new AmazonSimpleDBClient(awsCredentials);
-		Region usWest2 = Region.getRegion(Regions.US_WEST_2);
-		sdb.setRegion(usWest2);
+		sdb.setRegion(Region.getRegion(Regions.US_WEST_2));
 	}
 
 	@Override
-	public boolean itemExists(String itemId) {
-		String query = "select count(*) from `" + domain + "` where " + AwsItem.ITEMID_ATT + " = '" + itemId + "'";
+	public AwsItem getItem(String vaultName, String itemId) {
+		String itemName = makeItemName(vaultName, itemId);
+		GetAttributesResult result = sdb.getAttributes(new GetAttributesRequest(domain, itemName));
+		List<Attribute> attributes = result.getAttributes();
+		return new AwsItem(attributes);
+	}
+
+	@Override
+	public void saveItem(String vaultName, AwsItem item) {
+		if(!item.containsAttribute(TrackerMetaItem.VAULT_NAME_KEY)) {
+			item.addAttribute(TrackerMetaItem.VAULT_NAME_KEY, vaultName);
+		}
+		
+		String itemName = makeItemName(vaultName, item.getId());
+		sdb.putAttributes(new PutAttributesRequest(domain, itemName, item.getAwsAttributes()));
+	}
+
+	@Override
+	public void removeItem(String vaultName, AwsItem item) {
+		String itemName = makeItemName(vaultName, item.getId());
+		sdb.deleteAttributes(new DeleteAttributesRequest(domain, itemName));
+	}
+
+	@Override
+	public Collection<AwsItem> getAll(String vaultName) {
+		String query = "select * from `" + domain + "` where " + TrackerMetaItem.VAULT_NAME_KEY + " = '" + vaultName + "'";
+		List<Item> items = getManyItems(query);
+		Collection<AwsItem> results = new ArrayList<AwsItem>();
+
+		for (com.amazonaws.services.simpledb.model.Item item : items) {
+			results.add(new AwsItem(item.getAttributes()));
+		}
+
+		return results;
+	}
+
+	@Override
+	public boolean itemExists(String vaultName, String itemId) {
+		String query = "select count(*) from `" + domain + "` where `" + AwsItem.ITEMID_ATT + "` = '" + itemId + "' and `" + TrackerMetaItem.VAULT_NAME_KEY
+				+ "` = '" + vaultName + "'";
 		SelectResult select = sdb.select(new SelectRequest(query));
 		int count = new Integer(select.getItems().get(0).getAttributes().get(0).getValue());
 		return count == 1;
 	}
-	
-	@Override
-	public Collection<AwsItem> getAll() {
-		String query = "select * from `" + domain + "`";
-		List<Item> items = getManyItems(query);
-		Collection<AwsItem> results = new ArrayList<AwsItem>();
-		
-		for(com.amazonaws.services.simpledb.model.Item item : items) {
-			results.add(new AwsItem(item.getAttributes()));
-		}
-		
-		return results;
+
+	private String makeItemName(String vaultName, String itemId) {
+		return vaultName + itemId;
 	}
-	
+
 	/**
 	 * helper to read a lot of items
 	 * 
 	 * @param query
 	 * @return
 	 */
-	protected List<Item> getManyItems(String query){
-	    log.debug("Executing query: " + query);
-	    List<Item> items  = new ArrayList<Item>();
-	     
-	    String nextToken = null;
-	    do{
-	        SelectRequest selectRequest = new SelectRequest(query);
-	        selectRequest.setConsistentRead(false);
-	 
-	        if(nextToken != null){
-	            selectRequest.setNextToken(nextToken);
-	        }
-	 
-	        SelectResult result = sdb.select(selectRequest); 
-	        items.addAll(result.getItems());
-	        nextToken = result.getNextToken();
-	 
-	    }while(nextToken != null);
-	     
-	    log.debug("Found matching items: " + items.size());
-	    return items;
-	}
+	protected List<Item> getManyItems(String query) {
+		log.debug("Executing query: " + query);
+		List<Item> items = new ArrayList<Item>();
 
-	@Override
-	public void saveItem(AwsItem item) {
-		sdb.putAttributes(new PutAttributesRequest(domain, item.getId(), item.getAwsAttributes()));
-	}
+		String nextToken = null;
+		do {
+			SelectRequest selectRequest = new SelectRequest(query);
+			selectRequest.setConsistentRead(false);
 
-	@Override
-	public AwsItem getItem(String itemId) {
-		GetAttributesResult result = sdb.getAttributes(new GetAttributesRequest(domain, itemId));
-		List<Attribute> attributes = result.getAttributes();
-		return new AwsItem(attributes);
-	}
+			if (nextToken != null) {
+				selectRequest.setNextToken(nextToken);
+			}
 
-	public void setDomain(String domain) {
-		this.domain = domain;
-	}
+			SelectResult result = sdb.select(selectRequest);
+			items.addAll(result.getItems());
+			nextToken = result.getNextToken();
 
-	public void setAwsCredentials(AWSCredentials awsCredentials) {
-		this.awsCredentials = awsCredentials;
+		} while (nextToken != null);
+
+		log.debug("Found matching items: " + items.size());
+		return items;
 	}
 
 	/**
@@ -133,8 +143,12 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 		}
 	}
 
-	@Override
-	public void removeItem(AwsItem item) {
-		sdb.deleteAttributes(new DeleteAttributesRequest(domain, item.getId()));
+	public void setDomain(String domain) {
+		this.domain = domain;
 	}
+
+	public void setAwsCredentials(AWSCredentials awsCredentials) {
+		this.awsCredentials = awsCredentials;
+	}
+
 }

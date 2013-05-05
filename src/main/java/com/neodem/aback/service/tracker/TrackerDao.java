@@ -2,21 +2,35 @@ package com.neodem.aback.service.tracker;
 
 import java.util.Map;
 
-import com.neodem.aback.service.id.FileId;
+import com.neodem.aback.service.id.MetaItemId;
 
 public interface TrackerDao {
 
 	/**
 	 * return if a fileId record exists.
+	 * @param metaItemId
 	 * 
-	 * @param fileId
 	 * @return
 	 */
-	boolean exists(FileId fileId);
+	boolean exists(String vaultName, MetaItemId metaItemId);
 
-	TrackerMetaItem getMeta(FileId fileId);
+	/**
+	 * will return null if none found
+	 * @param metaItemId
+	 * @return
+	 */
+	TrackerMetaItem getMetaItem(String vaultName, MetaItemId metaItemId);
 
-	void setMeta(FileId fileId, TrackerMetaItem meta);
+	/**
+	 * 
+	 * @param metaItemId
+	 * @param meta
+	 */
+	void saveMetaItem(String vaultName, MetaItemId metaItemId, TrackerMetaItem meta);
 
-	Map<String, TrackerMetaItem> getAllRecords();
+	/**
+	 * 
+	 * @return
+	 */
+	Map<String, TrackerMetaItem> getAllItems(String vaultName);
 }
