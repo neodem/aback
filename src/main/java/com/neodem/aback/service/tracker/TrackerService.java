@@ -23,10 +23,10 @@ public interface TrackerService {
 	 * @param fileId
 	 * @param archiveId
 	 * @param relativePath
-	 * @param date
+	 * @param backedUpDate
 	 * @return true if this was a new record (eg. fileId does not exist)
 	 */
-	boolean updateAll(FileId fileId, String archiveId, Path relativePath, Date date);
+	boolean updateAll(FileId fileId, String archiveId, Path relativePath, Date backedUpDate);
 	
 	/**
 	 * 
