@@ -31,8 +31,6 @@ public class Backup {
 
 	private static Logger log = Logger.getLogger(Backup.class);
 
-	private static ApplicationContext appContext;
-
 	private GlacierFileIO glacierFileIo;
 	private ScannerService scannerService;
 	private TrackerService trackerService;
@@ -40,8 +38,11 @@ public class Backup {
 
 	/**
 	 * 
-	 * @param sourceRoot the root dir from where to backup files
-	 * @param vaultName the vault to put the files into
+	 * @param sourceRoot
+	 *            the root dir from where to backup files
+	 * @param vaultName
+	 *            the vault to put the files into (this is essentially the
+	 *            identifier for the backup job)
 	 */
 	public void process(Path sourceRoot, String vaultName) {
 		Map<Path, BasicFileAttributes> filesToBackup = scannerService.scan(sourceRoot);
@@ -90,7 +91,7 @@ public class Backup {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		appContext = new ClassPathXmlApplicationContext("Backup-context.xml");
+		ApplicationContext appContext = new ClassPathXmlApplicationContext("Backup-context.xml");
 		Backup aback = (Backup) appContext.getBean("backup-main");
 		Path sourceRoot = Paths.get(args[0]);
 		String vaultName = args[1];

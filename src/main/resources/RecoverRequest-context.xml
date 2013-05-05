@@ -9,10 +9,9 @@
 
 	<import resource="aback-common-context.xml" />
 
-	<bean id="recover-main" class="com.neodem.aback.main.Backup">
+	<bean id="recover-requestn" class="com.neodem.aback.main.Backup">
 		<property name="glacierFileIo" ref="glacierFileIO" />
 		<property name="trackerService" ref="trackerService" />
-		<property name="idService" ref="idService" />
 	</bean>
 
 </beans>
