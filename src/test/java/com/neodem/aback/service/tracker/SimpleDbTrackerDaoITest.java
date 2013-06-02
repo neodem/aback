@@ -21,11 +21,9 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.neodem.aback.aws.simpledb.AwsSimpleDbServiceImpl;
-import com.neodem.aback.aws.simpledb.DefaultSimpleDbDao;
-import com.neodem.aback.aws.simpledb.MetaItemId;
-import com.neodem.aback.aws.simpledb.SimpleDbDao;
-import com.neodem.aback.service.tracker.SimpleDbTrackerDao;
-import com.neodem.aback.service.tracker.TrackerMetaItem;
+import com.neodem.aback.aws.simpledb.AwsSimpleDbUtils;
+import com.neodem.aback.aws.simpledb.dao.DefaultSimpleDbDao;
+import com.neodem.aback.aws.simpledb.dao.SimpleDbDao;
 
 public class SimpleDbTrackerDaoITest {
 	private static final String TEST_DOMAINNAME = "DefaultTrackerDaoITestDomain";
@@ -34,19 +32,18 @@ public class SimpleDbTrackerDaoITest {
 	private static SimpleDbDao sdao;
 	private SimpleDbTrackerDao dao;
 	
-
 	@BeforeClass
-	public static void beforeClass() throws Exception {
+	public static void setUpBeforeClass() throws Exception {
 		AWSCredentialsProvider provider = new SystemPropertiesCredentialsProvider();
 		AWSCredentials creds = provider.getCredentials();
 
 		db = new AwsSimpleDbServiceImpl();
 		db.setAwsCredentials(creds);
-		db.afterPropertiesSet();
-
-		db.removeDomain(TEST_DOMAINNAME);
-		db.initDomain(TEST_DOMAINNAME);
 		db.setDomain(TEST_DOMAINNAME);
+		db.init();
+		
+		AwsSimpleDbUtils.removeDomain(db.getUnderlyingDbClient(), TEST_DOMAINNAME);
+		AwsSimpleDbUtils.initDomain(db.getUnderlyingDbClient(), TEST_DOMAINNAME);
 		
 		DefaultSimpleDbDao d = new DefaultSimpleDbDao();
 		d.setDbService(db);
@@ -55,12 +52,12 @@ public class SimpleDbTrackerDaoITest {
 	}
 
 	@AfterClass
-	public static void afterClass() {
-		sdao = null;
-		
+	public static void tearDownAfterClass() throws Exception {
 		if (db != null) {
-			db.removeDomain(TEST_DOMAINNAME);
+			AwsSimpleDbUtils.removeDomain(db.getUnderlyingDbClient(), TEST_DOMAINNAME);
 		}
+		
+		sdao = null;
 	}
 
 	@Before
@@ -81,24 +78,29 @@ public class SimpleDbTrackerDaoITest {
 		Date backedUpDate = new Date();
 		String vaultName = "vaultName";
 		
-		MetaItemId fileId = new MetaItemId(originalPath);
+		String itemId = "itemId";
 		
-		TrackerMetaItem meta = new TrackerMetaItem(vaultName, originalPath);
+		TrackerMetaItem meta = new TrackerMetaItem(itemId, vaultName, originalPath);
 		meta.setArchiveId(archiveId);
 		meta.setBackedUpDate(backedUpDate);
 		
-		dao.saveMetaItem(vaultName, fileId, meta);
+		dao.save(vaultName, meta);
 		
 		Thread.sleep(4000);
 		
-		assertThat(dao.metaItemExists(vaultName,fileId), is(true));
+		assertThat(dao.exists(vaultName,itemId), is(true));
 		
-		TrackerMetaItem resultMeta = dao.getMetaItem(vaultName, fileId);
+		TrackerMetaItem resultMeta = dao.get(vaultName, itemId);
 		
 		assertThat(resultMeta, not(nullValue()));
 		assertThat(resultMeta.getOriginalPath(), is(originalPath));
 		assertThat(resultMeta.getArchiveId(), is(archiveId));
 		assertThat(resultMeta.getBackedUpDate(), is(backedUpDate));
+		
+		dao.remove(vaultName, itemId);
+		
+		Thread.sleep(4000);
+				
+		assertThat(dao.exists(vaultName, itemId), is(false));
 	}
-
 }

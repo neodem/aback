@@ -5,23 +5,32 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
 
-import com.neodem.aback.aws.simpledb.MetaItem;
-import com.neodem.aback.aws.simpledb.MetaItemId;
-import com.neodem.aback.aws.simpledb.SimpleDbDao;
+import com.neodem.aback.aws.simpledb.dao.MetaItem;
+import com.neodem.aback.aws.simpledb.dao.SimpleDbDao;
 
 public class SimpleDbTrackerDao implements TrackerDao {
 
 	private SimpleDbDao dao;
 
 	@Override
-	public TrackerMetaItem getMetaItem(String vaultName, MetaItemId fileId) {
-		MetaItem metaItem = dao.getMetaItem(makeTs(vaultName), fileId);
+	public boolean exists(String vaultName, String id) {
+		return dao.metaItemExists(makeTs(vaultName), id);
+	}
+
+	@Override
+	public TrackerMetaItem get(String vaultName, String id) {
+		MetaItem metaItem = dao.getMetaItem(makeTs(vaultName), id);
 		return makeTrackerFromMeta(metaItem);
 	}
 
 	@Override
-	public Map<String, TrackerMetaItem> getAllTrackerItems(String vaultName) {
-		Map<String, MetaItem> allItems = dao.getAllItems(makeTs(vaultName));
+	public void save(String vaultName, TrackerMetaItem meta) {
+		dao.saveMetaItem(makeTs(vaultName), meta);
+	}
+
+	@Override
+	public Map<String, TrackerMetaItem> getAll(String vaultName) {
+		Map<String, MetaItem> allItems = dao.getAllMetaItems(makeTs(vaultName));
 		Map<String, TrackerMetaItem> translatedItems = new HashMap<>();
 		for (String key : allItems.keySet()) {
 			translatedItems.put(key, makeTrackerFromMeta(allItems.get(key)));
@@ -29,15 +38,10 @@ public class SimpleDbTrackerDao implements TrackerDao {
 
 		return translatedItems;
 	}
-
-	@Override
-	public void saveMetaItem(String vaultName, MetaItemId metaItemId, TrackerMetaItem meta) {
-		dao.saveMetaItem(makeTs(vaultName), metaItemId, meta);
-	}
 	
 	@Override
-	public boolean metaItemExists(String vaultName, MetaItemId metaItemId) {
-		return dao.metaItemExists(makeTs(vaultName), metaItemId);
+	public void remove(String vaultName, String id) {
+		dao.removeMetaItem(makeTs(vaultName), id);
 	}
 
 	private String makeTs(String vaultName) {
@@ -46,7 +50,7 @@ public class SimpleDbTrackerDao implements TrackerDao {
 
 	private TrackerMetaItem makeTrackerFromMeta(MetaItem metaItem) {
 		Map<String, String> attributeMap = metaItem.getMetaMap();
-		TrackerMetaItem t = new TrackerMetaItem();
+		TrackerMetaItem t = new TrackerMetaItem(metaItem.getId());
 		t.setMetaMap(attributeMap);
 		return t;
 	}
@@ -55,5 +59,4 @@ public class SimpleDbTrackerDao implements TrackerDao {
 	public void setDao(SimpleDbDao dao) {
 		this.dao = dao;
 	}
-
 }

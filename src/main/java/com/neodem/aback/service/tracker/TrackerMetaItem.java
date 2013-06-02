@@ -6,7 +6,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import com.neodem.aback.aws.simpledb.MetaItem;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
+import com.neodem.aback.aws.simpledb.dao.MetaItem;
 
 public class TrackerMetaItem extends MetaItem {
 
@@ -33,22 +36,20 @@ public class TrackerMetaItem extends MetaItem {
 		return b.toString();
 	}
 
-	private String getVaultName() {
-		return metaMap.get(VAULT_NAME_KEY);
-	}
-
-	public TrackerMetaItem(String vaultName, Path originalPath) {
+	public TrackerMetaItem(String id, String vaultName, Path originalPath) {
+		this(id);
 		metaMap.put(VAULT_NAME_KEY, vaultName);
 		metaMap.put(ORIGINAL_PTH_KEY, originalPath.toString());
 	}
 
-	public TrackerMetaItem(String archiveId, Path originalPath, Date backedUpDate, String vaultName) {
-		this(vaultName, originalPath);
+	public TrackerMetaItem(String id, String archiveId, Path originalPath, Date backedUpDate, String vaultName) {
+		this(id, vaultName, originalPath);
 		metaMap.put(ARCHIVE_ID_KEY, archiveId);
 		metaMap.put(BKD_UP_DATE_KEY, "" + backedUpDate.getTime());
 	}
 
-	public TrackerMetaItem() {
+	public TrackerMetaItem(String id) {
+		super(id);
 	}
 
 	public void setArchiveId(String archiveId) {
@@ -65,6 +66,10 @@ public class TrackerMetaItem extends MetaItem {
 
 	public String getArchiveId() {
 		return metaMap.get(ARCHIVE_ID_KEY);
+	}
+	
+	public String getVaultName() {
+		return metaMap.get(VAULT_NAME_KEY);
 	}
 
 	public Date getBackedUpDate() {
@@ -85,5 +90,26 @@ public class TrackerMetaItem extends MetaItem {
 			return new Long(filesizeString);
 		}
 		return null;
+	}
+
+	public int hashCode() {
+		return new HashCodeBuilder(139, 457).appendSuper(super.hashCode()).append(getArchiveId()).append(getOriginalPath()).append(getBackedUpDate())
+				.append(getVaultName()).append(getFilesize()).toHashCode();
+	}
+
+	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		if (obj == this) {
+			return true;
+		}
+		if (obj.getClass() != getClass()) {
+			return false;
+		}
+		TrackerMetaItem rhs = (TrackerMetaItem) obj;
+		return new EqualsBuilder().appendSuper(super.equals(obj)).append(getArchiveId(), rhs.getArchiveId()).append(getOriginalPath(), rhs.getOriginalPath())
+				.append(getBackedUpDate(), rhs.getBackedUpDate()).append(getVaultName(), rhs.getVaultName()).append(getFilesize(), rhs.getFilesize())
+				.isEquals();
 	}
 }
