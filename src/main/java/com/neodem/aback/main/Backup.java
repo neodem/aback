@@ -1,5 +1,7 @@
 package com.neodem.aback.main;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -12,7 +14,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.neodem.aback.aws.glacier.GlacierFileIO;
 import com.neodem.aback.aws.glacier.GlacierFileIOException;
-import com.neodem.aback.service.id.MetaItemId;
+import com.neodem.aback.aws.simpledb.MetaItemId;
 import com.neodem.aback.service.id.IdService;
 import com.neodem.aback.service.scanner.ScannerService;
 import com.neodem.aback.service.tracker.TrackerMetaItem;
@@ -49,13 +51,15 @@ public class Backup {
 
 		for (Path absolutePath : filesToBackup.keySet()) {
 			Path relativePath = sourceRoot.relativize(absolutePath);
+			
 
 			MetaItemId fileId = idService.makeId(relativePath);
-
 			if (fileId == null) {
 				log.warn("skipped since we couldn't make a fileId : " + absolutePath.toString());
 			} else {
-				if (trackerService.shouldBackup(vaultName, fileId, filesToBackup.get(absolutePath))) {
+				Long fileSize = getFileSize(absolutePath);
+				BasicFileAttributes fileAtts = filesToBackup.get(absolutePath);
+				if (trackerService.shouldBackup(vaultName, fileId, fileAtts, fileSize)) {
 					String archiveId;
 					try {
 						archiveId = glacierFileIo.writeFile(vaultName, absolutePath, fileId.getHash());
@@ -65,7 +69,7 @@ public class Backup {
 						continue;
 					}
 					log.info("backed up : " + absolutePath.toString() + " to " + vaultName + ":" + archiveId);
-					trackerService.register(vaultName, fileId, relativePath, archiveId, new Date());
+					trackerService.register(vaultName, fileId, relativePath, archiveId, new Date(), fileSize);
 				} else {
 					log.info(absolutePath.toString() + " does not need to backup");
 				}
@@ -73,6 +77,17 @@ public class Backup {
 		}
 
 		printResults(vaultName);
+	}
+
+	private Long getFileSize(Path path) {
+		long fileSize;
+		try {
+			fileSize = Files.size(path);
+		} catch (IOException e) {
+			String msg = "Could not determine filesize : " + e.getMessage();
+			throw new RuntimeException(msg, e);
+		}
+		return fileSize;
 	}
 
 	private void printResults(String vaultName) {

@@ -5,7 +5,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 import java.util.Map;
 
-import com.neodem.aback.service.id.MetaItemId;
+import com.neodem.aback.aws.simpledb.MetaItemId;
 
 public interface TrackerService {
 
@@ -14,10 +14,11 @@ public interface TrackerService {
 	 * 
 	 * @param fileId
 	 * @param basicFileAttributes
+	 * @param fileSize 
 	 * 
 	 * @return
 	 */
-	boolean shouldBackup(String vaultName, MetaItemId fileId, BasicFileAttributes basicFileAttributes);
+	boolean shouldBackup(String vaultName, MetaItemId fileId, BasicFileAttributes basicFileAttributes, Long fileSize);
 
 	/**
 	 * update the backedUpDate on a meta item. If the item does not exist, this
@@ -54,7 +55,8 @@ public interface TrackerService {
 	 * @param relativePath
 	 * @param archiveId
 	 * @param date
+	 * @param fileSize 
 	 */
-	void register(String vaultName, MetaItemId fileId, Path relativePath, String archiveId, Date date);
+	void register(String vaultName, MetaItemId fileId, Path relativePath, String archiveId, Date date, Long fileSize);
 
 }

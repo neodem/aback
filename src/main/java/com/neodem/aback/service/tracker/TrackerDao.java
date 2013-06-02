@@ -2,17 +2,17 @@ package com.neodem.aback.service.tracker;
 
 import java.util.Map;
 
-import com.neodem.aback.service.id.MetaItemId;
+import com.neodem.aback.aws.simpledb.MetaItemId;
 
 public interface TrackerDao {
 
 	/**
-	 * return if a fileId record exists.
+	 * return if a TrackerMetaItem record exists.
 	 * @param metaItemId
 	 * 
 	 * @return
 	 */
-	boolean exists(String vaultName, MetaItemId metaItemId);
+	boolean metaItemExists(String vaultName, MetaItemId metaItemId);
 
 	/**
 	 * will return null if none found
@@ -32,5 +32,5 @@ public interface TrackerDao {
 	 * 
 	 * @return
 	 */
-	Map<String, TrackerMetaItem> getAllItems(String vaultName);
+	Map<String, TrackerMetaItem> getAllTrackerItems(String vaultName);
 }

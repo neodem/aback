@@ -1,12 +1,11 @@
 package com.neodem.aback.service.id;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
 
+import com.neodem.aback.aws.simpledb.MetaItemId;
+
 /**
- * will simply return an integer key value prefixed by a string
- * 
  * @author vfumo
  * 
  */
@@ -17,7 +16,7 @@ public class IdServiceImpl implements IdService {
 		MetaItemId id;
 		try {
 			id = new MetaItemId(file);
-		} catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			return null;
 		}

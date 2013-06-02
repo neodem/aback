@@ -21,15 +21,19 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.neodem.aback.aws.simpledb.AwsSimpleDbServiceImpl;
-import com.neodem.aback.service.id.MetaItemId;
-import com.neodem.aback.service.tracker.DefaultTrackerDao;
+import com.neodem.aback.aws.simpledb.DefaultSimpleDbDao;
+import com.neodem.aback.aws.simpledb.MetaItemId;
+import com.neodem.aback.aws.simpledb.SimpleDbDao;
+import com.neodem.aback.service.tracker.SimpleDbTrackerDao;
 import com.neodem.aback.service.tracker.TrackerMetaItem;
 
-public class DefaultTrackerDaoITest {
+public class SimpleDbTrackerDaoITest {
 	private static final String TEST_DOMAINNAME = "DefaultTrackerDaoITestDomain";
 
 	private static AwsSimpleDbServiceImpl db;
-	private DefaultTrackerDao dao;
+	private static SimpleDbDao sdao;
+	private SimpleDbTrackerDao dao;
+	
 
 	@BeforeClass
 	public static void beforeClass() throws Exception {
@@ -42,10 +46,18 @@ public class DefaultTrackerDaoITest {
 
 		db.removeDomain(TEST_DOMAINNAME);
 		db.initDomain(TEST_DOMAINNAME);
+		db.setDomain(TEST_DOMAINNAME);
+		
+		DefaultSimpleDbDao d = new DefaultSimpleDbDao();
+		d.setDbService(db);
+		
+		sdao = d;
 	}
 
 	@AfterClass
 	public static void afterClass() {
+		sdao = null;
+		
 		if (db != null) {
 			db.removeDomain(TEST_DOMAINNAME);
 		}
@@ -53,8 +65,8 @@ public class DefaultTrackerDaoITest {
 
 	@Before
 	public void setUp() throws Exception {
-		dao = new DefaultTrackerDao();
-		dao.setDbService(db);
+		dao = new SimpleDbTrackerDao();
+		dao.setDao(sdao);
 	}
 
 	@After
@@ -79,7 +91,7 @@ public class DefaultTrackerDaoITest {
 		
 		Thread.sleep(4000);
 		
-		assertThat(dao.exists(vaultName,fileId), is(true));
+		assertThat(dao.metaItemExists(vaultName,fileId), is(true));
 		
 		TrackerMetaItem resultMeta = dao.getMetaItem(vaultName, fileId);
 		

@@ -14,5 +14,14 @@ public interface GlacierFileIO {
 	 * @return
 	 */
 	public String writeFile(String vaultName, Path file, String description) throws GlacierFileIOException;
+	
+	/**
+	 * 
+	 * @param vaultName
+	 * @param archiveId
+	 * @param description
+	 * @return
+	 */
+	public String initiateDownloadRequest(String vaultName, String archiveId, String description);
 
 }

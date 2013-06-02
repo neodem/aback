@@ -3,7 +3,8 @@ package com.neodem.aback.aws.simpledb;
 import java.util.Collection;
 
 /**
- * note an Item is like a row in the database the values are keyed
+ * tablespace = table
+ * AwsItem = row in table
  * 
  * @author vfumo
  * 
@@ -11,37 +12,37 @@ import java.util.Collection;
 public interface AwsSimpleDbService {
 	/**
 	 * 
-	 * @param vaultName
+	 * @param tablespace
 	 * @param itemId
 	 * @return
 	 */
-	public AwsItem getItem(String vaultName, String itemId);
+	public AwsItem getItem(String tablespace, String itemId);
 
 	/**
 	 * 
 	 * @param item
 	 */
-	public void saveItem(String vaultName, AwsItem item);
+	public void saveItem(String tablespace, AwsItem item);
 
 	/**
 	 * 
 	 * @param item
 	 */
-	public void removeItem(String vaultName, AwsItem item);
+	public void removeItem(String tablespace, AwsItem item);
 
 	/**
 	 * 
-	 * @param vaultName
+	 * @param tablespace
 	 * @return
 	 */
-	public Collection<AwsItem> getAll(String vaultName);
+	public Collection<AwsItem> getAll(String tablespace);
 
 	/**
 	 * 
-	 * @param vaultName
+	 * @param tablespace
 	 * @param itemId
 	 * @return
 	 */
-	public boolean itemExists(String vaultName, String itemId);
+	public boolean itemExists(String tablespace, String itemId);
 
 }

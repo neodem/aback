@@ -1,6 +1,8 @@
 package com.neodem.aback.service.retreival;
 
-import java.nio.file.Path;
+import java.util.Map;
+
+import com.neodem.aback.aws.simpledb.MetaItemId;
 
 public interface RetreivalManager {
 
@@ -8,6 +10,10 @@ public interface RetreivalManager {
 		Started
 	}
 
-	void addRetrievialItem(String jobId, Path originalPath, Status status);
+	Map<String, RetreivalItem> getAllRecords(String vaultName);
+
+	void addRetrievialItem(String vaultName, MetaItemId id, RetreivalItem r);
+
+	boolean exists(String vaultName, MetaItemId id);
 
 }

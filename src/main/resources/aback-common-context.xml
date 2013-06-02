@@ -22,6 +22,11 @@
 		<constructor-arg index="1" value="${aback.aws.secretKey}" />
 	</bean>
 
+	<bean id="dbService" class="com.neodem.aback.aws.simpledb.AwsSimpleDbServiceImpl">
+		<property name="awsCredentials" ref="awsCredentials" />
+		<property name="domain" value="${aback.aws.simpleDb.domain}" />
+	</bean>
+
 	<bean id="amazonGlacierClient" class="com.amazonaws.services.glacier.AmazonGlacierClient">
 		<constructor-arg index="0" ref="awsCredentials" />
 		<property name="endpoint" value="${aback.aws.endpoint}" />
@@ -32,19 +37,20 @@
 		<property name="amazonGlacierClient" ref="amazonGlacierClient" />
 	</bean>
 
-	<bean id="trackerDao" class="com.neodem.aback.service.tracker.DefaultTrackerDao">
-		<property name="dbService" ref="dbService-tracker" />
+	<bean id="simpleDbDao" class="com.neodem.aback.aws.simpledb.DefaultSimpleDbDao">
+		<property name="dbService" ref="dbService" />
+	</bean>
+
+	<bean id="trackerDao" class="com.neodem.aback.service.tracker.SimpleDbTrackerDao">
+		<property name="dao" ref="simpleDbDao" />
 	</bean>
 
 	<bean id="trackerService" class=" com.neodem.aback.service.tracker.DefaultTrackerService">
 		<property name="trackerDao" ref="trackerDao" />
+		<property name="trackerFilePath" value="${aback.trackerservice.trackerFile}" />
 	</bean>
 
-	<bean id="idService" class="com.neodem.aback.service.id.IdServiceImpl"/>
+	<bean id="idService" class="com.neodem.aback.service.id.IdServiceImpl" />
 
-	<bean id="dbService-tracker" class="com.neodem.aback.aws.simpledb.AwsSimpleDbServiceImpl">
-		<property name="awsCredentials" ref="awsCredentials" />
-		<property name="domain" value="${aback.trackerservice.aws.domain}" />
-	</bean>
 
 </beans>

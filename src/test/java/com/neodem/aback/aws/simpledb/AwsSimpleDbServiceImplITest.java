@@ -14,7 +14,6 @@ import org.junit.Test;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
-import com.neodem.aback.service.tracker.TrackerMetaItem;
 
 public class AwsSimpleDbServiceImplITest {
 
@@ -32,6 +31,7 @@ public class AwsSimpleDbServiceImplITest {
 
 		db.removeDomain(TEST_DOMAINNAME);
 		db.initDomain(TEST_DOMAINNAME);
+		db.setDomain(TEST_DOMAINNAME);
 	}
 
 	@AfterClass
@@ -43,60 +43,57 @@ public class AwsSimpleDbServiceImplITest {
 
 	@Test
 	public void saveItemShouldSaveTheItemIntoAws() throws InterruptedException {
-		String vaultName = "testVaultName";
+		String tablespace = "testVaultName";
 		String itemId = "item1";
 
 		AwsItem testItem = new AwsItem(itemId);
-		testItem.addAttribute(TrackerMetaItem.VAULT_NAME_KEY, vaultName);
 		testItem.addAttribute("att1", "att1.value");
-		db.saveItem(vaultName, testItem);
+		db.saveItem(tablespace, testItem);
 
 		Thread.sleep(5000);
 
-		AwsItem resultItem = db.getItem(vaultName, itemId);
+		AwsItem resultItem = db.getItem(tablespace, itemId);
 
 		assertThat(resultItem, not(nullValue()));
 		assertThat(resultItem.getId(), is(itemId));
 		assertThat(resultItem.get("att1"), is("att1.value"));
 
-		db.removeItem(vaultName, testItem);
+		db.removeItem(tablespace, testItem);
 	}
 
 	@Test
 	public void getAllShouldWork() throws InterruptedException {
-		String vaultName = "testVaultName";
+		String tablespace = "testVaultName";
 		String itemId = "item1";
 		
 		AwsItem testItem = new AwsItem(itemId);
-		testItem.addAttribute(TrackerMetaItem.VAULT_NAME_KEY, vaultName);
 		testItem.addAttribute("att1", "att1.value");
-		db.saveItem(vaultName, testItem);
+		db.saveItem(tablespace, testItem);
 		
 		Thread.sleep(5000);
 		
-		Collection<AwsItem> all = db.getAll(vaultName);
+		Collection<AwsItem> all = db.getAll(tablespace);
 		
 		assertThat(all.size(), is(1));
 		
-		db.removeItem(vaultName, testItem);
+		db.removeItem(tablespace, testItem);
 		
 	}
 	@Test
 	public void itemExistsShouldWork() throws InterruptedException {
-		String vaultName = "testVaultName";
-		assertThat(db.itemExists(vaultName, "IDontexist"), is(false));
+		String tablespace = "testVaultName";
+		assertThat(db.itemExists(tablespace, "IDontexist"), is(false));
 
 		String itemId = "IDoExist";
 
 		AwsItem testItem = new AwsItem(itemId);
-		testItem.addAttribute(TrackerMetaItem.VAULT_NAME_KEY, vaultName);
-		db.saveItem(vaultName, testItem);
+		db.saveItem(tablespace, testItem);
 
 		Thread.sleep(5000);
 
-		assertThat(db.itemExists(vaultName, itemId), is(true));
+		assertThat(db.itemExists(tablespace, itemId), is(true));
 
-		db.removeItem(vaultName, testItem);
+		db.removeItem(tablespace, testItem);
 
 	}
 

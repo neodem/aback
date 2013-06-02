@@ -9,9 +9,20 @@
 
 	<import resource="aback-common-context.xml" />
 
-	<bean id="recover-requestn" class="com.neodem.aback.main.Backup">
+	<bean id="recover-request" class="com.neodem.aback.main.RecoverRequest">
 		<property name="glacierFileIo" ref="glacierFileIO" />
 		<property name="trackerService" ref="trackerService" />
+		<property name="retreivalManager" ref="retreivalManager" />
+	</bean>
+
+	<bean id="retreivalManagerDao"
+		class="com.neodem.aback.service.retreival.SimpleDbRetreivalManagerDao">
+		<property name="dao" ref="simpleDbDao" />
+	</bean>
+	
+	<bean id="retreivalManager"
+		class="com.neodem.aback.service.retreival.DefaultRetreivalManager">
+		<property name="retreivalManagerDao" ref="retreivalManagerDao" />
 	</bean>
 
 </beans>

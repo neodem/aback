@@ -19,8 +19,11 @@ import com.amazonaws.services.glacier.AmazonGlacierClient;
 import com.amazonaws.services.glacier.TreeHashGenerator;
 import com.amazonaws.services.glacier.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.glacier.model.CompleteMultipartUploadResult;
+import com.amazonaws.services.glacier.model.InitiateJobRequest;
+import com.amazonaws.services.glacier.model.InitiateJobResult;
 import com.amazonaws.services.glacier.model.InitiateMultipartUploadRequest;
 import com.amazonaws.services.glacier.model.InitiateMultipartUploadResult;
+import com.amazonaws.services.glacier.model.JobParameters;
 import com.amazonaws.services.glacier.model.UploadMultipartPartRequest;
 import com.amazonaws.services.glacier.model.UploadMultipartPartResult;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
@@ -72,6 +75,28 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 		}
 
 		return uploadLargeFile(path, description, vaultName, fileSize);
+	}
+
+	public String initiateDownloadRequest(String vaultName, String archiveId, String description) {
+		JobParameters jobParameters = new JobParameters().withArchiveId(archiveId).withDescription(description).withType("archive-retrieval");
+		InitiateJobResult initiateJobResult = amazonGlacierClient.initiateJob(new InitiateJobRequest().withJobParameters(jobParameters)
+				.withVaultName(vaultName));
+		String jobId = initiateJobResult.getJobId();
+		return jobId;
+	}
+
+	public String initiateLargeDownloadRequest(String vaultName, String archiveId, String description) {
+		throw new UnsupportedOperationException();
+//		int ONE_MEG = 1048576;
+//		String retrievalByteRange = String.format("%s-%s", ONE_MEG, 2 * ONE_MEG - 1);
+//
+//		JobParameters jobParameters = new JobParameters().withType("archive-retrieval").withArchiveId(archiveId).withRetrievalByteRange(retrievalByteRange)
+//				.withSNSTopic(snsTopicARN);
+//
+//		InitiateJobResult initiateJobResult = amazonGlacierClient.initiateJob(new InitiateJobRequest().withJobParameters(jobParameters).withVaultName(vaultName));
+//
+//		String jobId = initiateJobResult.getJobId();
+//		return jobId;
 	}
 
 	private String uploadFile(Path path, String description, String vaultName) throws GlacierFileIOException {

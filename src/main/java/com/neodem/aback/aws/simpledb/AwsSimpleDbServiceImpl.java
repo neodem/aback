@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Required;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.regions.Region;
@@ -22,7 +23,6 @@ import com.amazonaws.services.simpledb.model.Item;
 import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
-import com.neodem.aback.service.tracker.TrackerMetaItem;
 
 /**
  * init the service to connect to a domain...
@@ -31,6 +31,8 @@ import com.neodem.aback.service.tracker.TrackerMetaItem;
  * 
  */
 public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingBean {
+	
+	protected static final String TABLESPACE_KEY = "tablespace";
 
 	private static Logger log = Logger.getLogger(AwsSimpleDbServiceImpl.class);
 
@@ -43,35 +45,37 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 	public void afterPropertiesSet() throws Exception {
 		sdb = new AmazonSimpleDBClient(awsCredentials);
 		sdb.setRegion(Region.getRegion(Regions.US_WEST_2));
+		
+		initDomain(domain);
 	}
 
 	@Override
-	public AwsItem getItem(String vaultName, String itemId) {
-		String itemName = makeItemName(vaultName, itemId);
+	public AwsItem getItem(String tablespace, String itemId) {
+		String itemName = makeItemName(tablespace, itemId);
 		GetAttributesResult result = sdb.getAttributes(new GetAttributesRequest(domain, itemName));
 		List<Attribute> attributes = result.getAttributes();
 		return new AwsItem(attributes);
 	}
 
 	@Override
-	public void saveItem(String vaultName, AwsItem item) {
-		if(!item.containsAttribute(TrackerMetaItem.VAULT_NAME_KEY)) {
-			item.addAttribute(TrackerMetaItem.VAULT_NAME_KEY, vaultName);
+	public void saveItem(String tablespace, AwsItem item) {
+		if(!item.containsAttribute(TABLESPACE_KEY)) {
+			item.addAttribute(TABLESPACE_KEY, tablespace);
 		}
 		
-		String itemName = makeItemName(vaultName, item.getId());
+		String itemName = makeItemName(tablespace, item.getId());
 		sdb.putAttributes(new PutAttributesRequest(domain, itemName, item.getAwsAttributes()));
 	}
 
 	@Override
-	public void removeItem(String vaultName, AwsItem item) {
-		String itemName = makeItemName(vaultName, item.getId());
+	public void removeItem(String tablespace, AwsItem item) {
+		String itemName = makeItemName(tablespace, item.getId());
 		sdb.deleteAttributes(new DeleteAttributesRequest(domain, itemName));
 	}
 
 	@Override
-	public Collection<AwsItem> getAll(String vaultName) {
-		String query = "select * from `" + domain + "` where " + TrackerMetaItem.VAULT_NAME_KEY + " = '" + vaultName + "'";
+	public Collection<AwsItem> getAll(String tablespace) {
+		String query = "select * from `" + domain + "` where " + TABLESPACE_KEY + " = '" + tablespace + "'";
 		List<Item> items = getManyItems(query);
 		Collection<AwsItem> results = new ArrayList<AwsItem>();
 
@@ -83,16 +87,16 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 	}
 
 	@Override
-	public boolean itemExists(String vaultName, String itemId) {
-		String query = "select count(*) from `" + domain + "` where `" + AwsItem.ITEMID_ATT + "` = '" + itemId + "' and `" + TrackerMetaItem.VAULT_NAME_KEY
-				+ "` = '" + vaultName + "'";
+	public boolean itemExists(String tablespace, String itemId) {
+		String query = "select count(*) from `" + domain + "` where `" + AwsItem.ITEMID_ATT + "` = '" + itemId + "' and `" + TABLESPACE_KEY
+				+ "` = '" + tablespace + "'";
 		SelectResult select = sdb.select(new SelectRequest(query));
 		int count = new Integer(select.getItems().get(0).getAttributes().get(0).getValue());
 		return count == 1;
 	}
 
-	private String makeItemName(String vaultName, String itemId) {
-		return vaultName + itemId;
+	private String makeItemName(String tablespace, String itemId) {
+		return tablespace + itemId;
 	}
 
 	/**
@@ -132,7 +136,6 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 		if (!domainNames.contains(domainName)) {
 			sdb.createDomain(new CreateDomainRequest(domainName));
 		}
-		domain = domainName;
 	}
 
 	public void removeDomain(String domainName) {
@@ -146,6 +149,7 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 		this.domain = domain;
 	}
 
+	@Required
 	public void setAwsCredentials(AWSCredentials awsCredentials) {
 		this.awsCredentials = awsCredentials;
 	}
