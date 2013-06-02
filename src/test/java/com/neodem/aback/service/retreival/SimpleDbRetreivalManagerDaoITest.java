@@ -20,9 +20,9 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.SystemPropertiesCredentialsProvider;
 import com.neodem.aback.aws.simpledb.AwsSimpleDbServiceImpl;
-import com.neodem.aback.aws.simpledb.DefaultSimpleDbDao;
-import com.neodem.aback.aws.simpledb.MetaItemId;
-import com.neodem.aback.aws.simpledb.SimpleDbDao;
+import com.neodem.aback.aws.simpledb.AwsSimpleDbUtils;
+import com.neodem.aback.aws.simpledb.dao.DefaultSimpleDbDao;
+import com.neodem.aback.aws.simpledb.dao.SimpleDbDao;
 import com.neodem.aback.service.retreival.RetreivalManager.Status;
 
 public class SimpleDbRetreivalManagerDaoITest {
@@ -33,31 +33,31 @@ public class SimpleDbRetreivalManagerDaoITest {
 	private SimpleDbRetreivalManagerDao dao;
 
 	@BeforeClass
-	public static void beforeClass() throws Exception {
+	public static void setUpBeforeClass() throws Exception {
 		AWSCredentialsProvider provider = new SystemPropertiesCredentialsProvider();
 		AWSCredentials creds = provider.getCredentials();
 
 		db = new AwsSimpleDbServiceImpl();
 		db.setAwsCredentials(creds);
-		db.afterPropertiesSet();
-
-		db.removeDomain(TEST_DOMAINNAME);
-		db.initDomain(TEST_DOMAINNAME);
 		db.setDomain(TEST_DOMAINNAME);
-		
+		db.init();
+
+		AwsSimpleDbUtils.removeDomain(db.getUnderlyingDbClient(), TEST_DOMAINNAME);
+		AwsSimpleDbUtils.initDomain(db.getUnderlyingDbClient(), TEST_DOMAINNAME);
+
 		DefaultSimpleDbDao d = new DefaultSimpleDbDao();
 		d.setDbService(db);
-		
+
 		sdao = d;
 	}
 
 	@AfterClass
-	public static void afterClass() {
-		sdao = null;
-		
+	public static void tearDownAfterClass() throws Exception {
 		if (db != null) {
-			db.removeDomain(TEST_DOMAINNAME);
+			AwsSimpleDbUtils.removeDomain(db.getUnderlyingDbClient(), TEST_DOMAINNAME);
 		}
+
+		sdao = null;
 	}
 
 	@Before
@@ -77,21 +77,31 @@ public class SimpleDbRetreivalManagerDaoITest {
 		Path originalPath = Paths.get("C:/", "someFilename");
 		Status status = Status.Started;
 		String vaultName = "vaultName";
-		
-		RetreivalItem r = new RetreivalItem(jobId, originalPath, status);
-		MetaItemId id = new MetaItemId(jobId, originalPath);
-		
-		dao.save(vaultName, id, r);
-		
+		String archiveId = "archiveId";
+		Boolean largeFile = true;
+		String itemId = "itemId";
+
+		RetreivalItem r = new RetreivalItem(itemId, jobId, archiveId, originalPath, status, largeFile);
+
+		dao.save(vaultName, r);
+
 		Thread.sleep(4000);
-		
-		assertThat(dao.itemExists(vaultName,id), is(true));
-		
-		RetreivalItem resultMeta = dao.getItem(vaultName, id);
-		
+
+		assertThat(dao.itemExists(vaultName, itemId), is(true));
+
+		RetreivalItem resultMeta = dao.getItem(vaultName, itemId);
+
 		assertThat(resultMeta, not(nullValue()));
 		assertThat(resultMeta.getOriginalPath(), is(originalPath));
 		assertThat(resultMeta.getJobId(), is(jobId));
 		assertThat(resultMeta.getStatus(), is(status));
+		assertThat(resultMeta.getArchiveId(), is(archiveId));
+		assertThat(resultMeta.isLargeFile(), is(true));
+
+		dao.remove(vaultName, itemId);
+		
+		Thread.sleep(4000);
+				
+		assertThat(dao.itemExists(vaultName, itemId), is(false));
 	}
 }

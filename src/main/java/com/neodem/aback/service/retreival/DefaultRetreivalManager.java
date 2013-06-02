@@ -4,16 +4,9 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Required;
 
-import com.neodem.aback.aws.simpledb.MetaItemId;
-
 public class DefaultRetreivalManager implements RetreivalManager {
-	
-	private RetreivalManagerDao retreivalManagerDao;
 
-	@Override
-	public void addRetrievialItem(String vaultName, MetaItemId id, RetreivalItem r) {
-		retreivalManagerDao.save(vaultName, id, r);
-	}
+	private RetreivalManagerDao retreivalManagerDao;
 
 	@Required
 	public void setRetreivalManagerDao(RetreivalManagerDao retreivalManagerDao) {
@@ -21,13 +14,23 @@ public class DefaultRetreivalManager implements RetreivalManager {
 	}
 
 	@Override
-	public Map<String, RetreivalItem> getAllRecords(String vaultName) {
+	public Map<String, RetreivalItem> getAllRetreivalItems(String vaultName) {
 		return retreivalManagerDao.getAllItems(vaultName);
 	}
 
 	@Override
-	public boolean exists(String vaultName, MetaItemId id) {
+	public void addRetreivalItem(String vaultName, RetreivalItem r) {
+		retreivalManagerDao.save(vaultName, r);
+	}
+
+	@Override
+	public boolean retreivalItemExists(String vaultName, String id) {
 		return retreivalManagerDao.itemExists(vaultName, id);
+	}
+
+	@Override
+	public void removeRetreivalItem(String vaultName, RetreivalItem r) {
+		retreivalManagerDao.remove(vaultName, r.getId());
 	}
 
 }
