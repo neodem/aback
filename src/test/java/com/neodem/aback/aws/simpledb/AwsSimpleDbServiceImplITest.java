@@ -27,17 +27,17 @@ public class AwsSimpleDbServiceImplITest {
 
 		db = new AwsSimpleDbServiceImpl();
 		db.setAwsCredentials(creds);
-		db.afterPropertiesSet();
-
-		db.removeDomain(TEST_DOMAINNAME);
-		db.initDomain(TEST_DOMAINNAME);
 		db.setDomain(TEST_DOMAINNAME);
+		db.init();
+		
+		AwsSimpleDbUtils.removeDomain(db.getUnderlyingDbClient(), TEST_DOMAINNAME);
+		AwsSimpleDbUtils.initDomain(db.getUnderlyingDbClient(), TEST_DOMAINNAME);
 	}
 
 	@AfterClass
 	public static void afterClass() {
 		if (db != null) {
-			db.removeDomain(TEST_DOMAINNAME);
+			AwsSimpleDbUtils.removeDomain(db.getUnderlyingDbClient(), TEST_DOMAINNAME);
 		}
 	}
 
@@ -58,7 +58,7 @@ public class AwsSimpleDbServiceImplITest {
 		assertThat(resultItem.getId(), is(itemId));
 		assertThat(resultItem.get("att1"), is("att1.value"));
 
-		db.removeItem(tablespace, testItem);
+		db.removeItem(tablespace, itemId);
 	}
 
 	@Test
@@ -72,11 +72,11 @@ public class AwsSimpleDbServiceImplITest {
 		
 		Thread.sleep(5000);
 		
-		Collection<AwsItem> all = db.getAll(tablespace);
+		Collection<AwsItem> all = db.getAllItems(tablespace);
 		
 		assertThat(all.size(), is(1));
 		
-		db.removeItem(tablespace, testItem);
+		db.removeItem(tablespace, itemId);
 		
 	}
 	@Test
@@ -93,7 +93,7 @@ public class AwsSimpleDbServiceImplITest {
 
 		assertThat(db.itemExists(tablespace, itemId), is(true));
 
-		db.removeItem(tablespace, testItem);
+		db.removeItem(tablespace, itemId);
 
 	}
 

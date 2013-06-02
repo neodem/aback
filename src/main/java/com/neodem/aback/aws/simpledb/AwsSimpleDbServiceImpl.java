@@ -14,9 +14,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.amazonaws.services.simpledb.model.Attribute;
-import com.amazonaws.services.simpledb.model.CreateDomainRequest;
 import com.amazonaws.services.simpledb.model.DeleteAttributesRequest;
-import com.amazonaws.services.simpledb.model.DeleteDomainRequest;
 import com.amazonaws.services.simpledb.model.GetAttributesRequest;
 import com.amazonaws.services.simpledb.model.GetAttributesResult;
 import com.amazonaws.services.simpledb.model.Item;
@@ -31,7 +29,7 @@ import com.amazonaws.services.simpledb.model.SelectResult;
  * 
  */
 public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingBean {
-	
+
 	protected static final String TABLESPACE_KEY = "tablespace";
 
 	private static Logger log = Logger.getLogger(AwsSimpleDbServiceImpl.class);
@@ -43,10 +41,8 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		sdb = new AmazonSimpleDBClient(awsCredentials);
-		sdb.setRegion(Region.getRegion(Regions.US_WEST_2));
-		
-		initDomain(domain);
+		init();
+		AwsSimpleDbUtils.initDomain(sdb, domain);
 	}
 
 	@Override
@@ -59,22 +55,22 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 
 	@Override
 	public void saveItem(String tablespace, AwsItem item) {
-		if(!item.containsAttribute(TABLESPACE_KEY)) {
+		if (!item.containsAttribute(TABLESPACE_KEY)) {
 			item.addAttribute(TABLESPACE_KEY, tablespace);
 		}
-		
+
 		String itemName = makeItemName(tablespace, item.getId());
 		sdb.putAttributes(new PutAttributesRequest(domain, itemName, item.getAwsAttributes()));
 	}
 
 	@Override
-	public void removeItem(String tablespace, AwsItem item) {
-		String itemName = makeItemName(tablespace, item.getId());
+	public void removeItem(String tablespace, String id) {
+		String itemName = makeItemName(tablespace, id);
 		sdb.deleteAttributes(new DeleteAttributesRequest(domain, itemName));
 	}
 
 	@Override
-	public Collection<AwsItem> getAll(String tablespace) {
+	public Collection<AwsItem> getAllItems(String tablespace) {
 		String query = "select * from `" + domain + "` where " + TABLESPACE_KEY + " = '" + tablespace + "'";
 		List<Item> items = getManyItems(query);
 		Collection<AwsItem> results = new ArrayList<AwsItem>();
@@ -88,15 +84,15 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 
 	@Override
 	public boolean itemExists(String tablespace, String itemId) {
-		String query = "select count(*) from `" + domain + "` where `" + AwsItem.ITEMID_ATT + "` = '" + itemId + "' and `" + TABLESPACE_KEY
-				+ "` = '" + tablespace + "'";
+		String query = "select count(*) from `" + domain + "` where `" + AwsItem.ITEMID_ATT + "` = '" + itemId + "' and `" + TABLESPACE_KEY + "` = '"
+				+ tablespace + "'";
 		SelectResult select = sdb.select(new SelectRequest(query));
 		int count = new Integer(select.getItems().get(0).getAttributes().get(0).getValue());
 		return count == 1;
 	}
 
 	private String makeItemName(String tablespace, String itemId) {
-		return tablespace + itemId;
+		return tablespace + '.' + itemId;
 	}
 
 	/**
@@ -128,23 +124,7 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 		return items;
 	}
 
-	/**
-	 * 
-	 */
-	public void initDomain(String domainName) {
-		List<String> domainNames = sdb.listDomains().getDomainNames();
-		if (!domainNames.contains(domainName)) {
-			sdb.createDomain(new CreateDomainRequest(domainName));
-		}
-	}
-
-	public void removeDomain(String domainName) {
-		List<String> domainNames = sdb.listDomains().getDomainNames();
-		if (domainNames.contains(domainName)) {
-			sdb.deleteDomain(new DeleteDomainRequest(domainName));
-		}
-	}
-
+	@Required
 	public void setDomain(String domain) {
 		this.domain = domain;
 	}
@@ -152,6 +132,15 @@ public class AwsSimpleDbServiceImpl implements AwsSimpleDbService, InitializingB
 	@Required
 	public void setAwsCredentials(AWSCredentials awsCredentials) {
 		this.awsCredentials = awsCredentials;
+	}
+
+	public void init() throws Exception {
+		sdb = new AmazonSimpleDBClient(awsCredentials);
+		sdb.setRegion(Region.getRegion(Regions.US_WEST_2));
+	}
+
+	public AmazonSimpleDB getUnderlyingDbClient() {
+		return sdb;
 	}
 
 }

@@ -3,13 +3,14 @@ package com.neodem.aback.aws.simpledb;
 import java.util.Collection;
 
 /**
- * tablespace = table
+ * tablespace = table 
  * AwsItem = row in table
  * 
  * @author vfumo
  * 
  */
 public interface AwsSimpleDbService {
+
 	/**
 	 * 
 	 * @param tablespace
@@ -19,7 +20,8 @@ public interface AwsSimpleDbService {
 	public AwsItem getItem(String tablespace, String itemId);
 
 	/**
-	 * 
+	 * @param tablespace
+	 * @param itemId
 	 * @param item
 	 */
 	public void saveItem(String tablespace, AwsItem item);
@@ -28,14 +30,14 @@ public interface AwsSimpleDbService {
 	 * 
 	 * @param item
 	 */
-	public void removeItem(String tablespace, AwsItem item);
+	public void removeItem(String tablespace, String itemId);
 
 	/**
 	 * 
 	 * @param tablespace
 	 * @return
 	 */
-	public Collection<AwsItem> getAll(String tablespace);
+	public Collection<AwsItem> getAllItems(String tablespace);
 
 	/**
 	 * 
