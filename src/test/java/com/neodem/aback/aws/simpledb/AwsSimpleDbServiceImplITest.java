@@ -77,8 +77,8 @@ public class AwsSimpleDbServiceImplITest {
 		assertThat(all.size(), is(1));
 		
 		db.removeItem(tablespace, itemId);
-		
 	}
+	
 	@Test
 	public void itemExistsShouldWork() throws InterruptedException {
 		String tablespace = "testVaultName";
@@ -94,7 +94,6 @@ public class AwsSimpleDbServiceImplITest {
 		assertThat(db.itemExists(tablespace, itemId), is(true));
 
 		db.removeItem(tablespace, itemId);
-
 	}
 
 }
