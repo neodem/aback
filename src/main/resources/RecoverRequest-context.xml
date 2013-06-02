@@ -14,6 +14,10 @@
 		<property name="trackerService" ref="trackerService" />
 		<property name="retreivalManager" ref="retreivalManager" />
 	</bean>
+	<bean id="recover" class="com.neodem.aback.main.Recover">
+		<property name="glacierFileIo" ref="glacierFileIO" />
+		<property name="retreivalManager" ref="retreivalManager" />
+	</bean>
 
 	<bean id="retreivalManagerDao"
 		class="com.neodem.aback.service.retreival.SimpleDbRetreivalManagerDao">

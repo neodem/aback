@@ -2,7 +2,9 @@ package com.neodem.aback.aws.glacier;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
@@ -19,6 +21,8 @@ import com.amazonaws.services.glacier.AmazonGlacierClient;
 import com.amazonaws.services.glacier.TreeHashGenerator;
 import com.amazonaws.services.glacier.model.CompleteMultipartUploadRequest;
 import com.amazonaws.services.glacier.model.CompleteMultipartUploadResult;
+import com.amazonaws.services.glacier.model.GetJobOutputRequest;
+import com.amazonaws.services.glacier.model.GetJobOutputResult;
 import com.amazonaws.services.glacier.model.InitiateJobRequest;
 import com.amazonaws.services.glacier.model.InitiateJobResult;
 import com.amazonaws.services.glacier.model.InitiateMultipartUploadRequest;
@@ -87,17 +91,57 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 
 	public String initiateLargeDownloadRequest(String vaultName, String archiveId, String description) {
 		throw new UnsupportedOperationException();
-//		int ONE_MEG = 1048576;
-//		String retrievalByteRange = String.format("%s-%s", ONE_MEG, 2 * ONE_MEG - 1);
-//
-//		JobParameters jobParameters = new JobParameters().withType("archive-retrieval").withArchiveId(archiveId).withRetrievalByteRange(retrievalByteRange)
-//				.withSNSTopic(snsTopicARN);
-//
-//		InitiateJobResult initiateJobResult = amazonGlacierClient.initiateJob(new InitiateJobRequest().withJobParameters(jobParameters).withVaultName(vaultName));
-//
-//		String jobId = initiateJobResult.getJobId();
-//		return jobId;
+		// int ONE_MEG = 1048576;
+		// String retrievalByteRange = String.format("%s-%s", ONE_MEG, 2 *
+		// ONE_MEG - 1);
+		//
+		// JobParameters jobParameters = new
+		// JobParameters().withType("archive-retrieval").withArchiveId(archiveId).withRetrievalByteRange(retrievalByteRange)
+		// .withSNSTopic(snsTopicARN);
+		//
+		// InitiateJobResult initiateJobResult =
+		// amazonGlacierClient.initiateJob(new
+		// InitiateJobRequest().withJobParameters(jobParameters).withVaultName(vaultName));
+		//
+		// String jobId = initiateJobResult.getJobId();
+		// return jobId;
 	}
+
+	@Override
+	public void getFile(String vaultName, Path destination, String jobId) {
+
+		GetJobOutputRequest jobOutputRequest = new GetJobOutputRequest().withJobId(jobId).withVaultName(vaultName);
+		GetJobOutputResult jobOutputResult = amazonGlacierClient.getJobOutput(jobOutputRequest);
+
+		InputStream is = jobOutputResult.getBody();
+		FileOutputStream os = null;
+		try {
+		 os = new FileOutputStream(destination.toFile());
+
+		byte[] buffer = new byte[4096];
+		int bytesRead;
+		while ((bytesRead = is.read(buffer)) != -1) {
+			os.write(buffer, 0, bytesRead);
+		}
+		
+		} catch (IOException e) {
+			
+		} finally {
+			try {
+				is.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				os.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 
 	private String uploadFile(Path path, String description, String vaultName) throws GlacierFileIOException {
 		UploadResult result;
@@ -218,5 +262,11 @@ public class DefaultGlacierFileIO implements GlacierFileIO {
 
 	public void setAmazonGlacierClient(AmazonGlacierClient amazonGlacierClient) {
 		this.amazonGlacierClient = amazonGlacierClient;
+	}
+
+	@Override
+	public void getLargeFile(String vaultName, Path destination, String jobId) {
+		// TODO Auto-generated method stub
+
 	}
 }

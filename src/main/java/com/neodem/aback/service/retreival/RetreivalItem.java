@@ -3,6 +3,9 @@ package com.neodem.aback.service.retreival;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import com.neodem.aback.aws.simpledb.dao.MetaItem;
 import com.neodem.aback.service.retreival.RetreivalManager.Status;
 
@@ -72,50 +75,24 @@ public class RetreivalItem extends MetaItem {
 				+ ", largeFile=" + isLargeFile() + "]";
 	}
 
-	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((getArchiveId() == null) ? 0 : getArchiveId().hashCode());
-		result = prime * result + ((getJobId() == null) ? 0 : getJobId().hashCode());
-		result = prime * result + ((isLargeFile() == null) ? 0 : isLargeFile().hashCode());
-		result = prime * result + ((getOriginalPath() == null) ? 0 : getOriginalPath().hashCode());
-		result = prime * result + ((getStatus() == null) ? 0 : getStatus().hashCode());
-		return result;
+		return new HashCodeBuilder(139, 457).appendSuper(super.hashCode()).append(getJobId()).append(getArchiveId()).append(getOriginalPath())
+				.append(getStatus()).append(isLargeFile()).toHashCode();
 	}
 
-	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (obj == null) {
+			return false;
+		}
+		if (obj == this) {
 			return true;
-		if (obj == null)
+		}
+		if (obj.getClass() != getClass()) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RetreivalItem other = (RetreivalItem) obj;
-		if (getArchiveId() == null) {
-			if (other.getArchiveId() != null)
-				return false;
-		} else if (!getArchiveId().equals(other.getArchiveId()))
-			return false;
-		if (getJobId() == null) {
-			if (other.getJobId() != null)
-				return false;
-		} else if (!getJobId().equals(other.getJobId()))
-			return false;
-		if (isLargeFile() == null) {
-			if (other.isLargeFile() != null)
-				return false;
-		} else if (!isLargeFile().equals(other.isLargeFile()))
-			return false;
-		if (getOriginalPath() == null) {
-			if (other.getOriginalPath() != null)
-				return false;
-		} else if (!getOriginalPath().equals(other.getOriginalPath()))
-			return false;
-		if (getStatus() != other.getStatus())
-			return false;
-		return true;
+		}
+		RetreivalItem rhs = (RetreivalItem) obj;
+		return new EqualsBuilder().appendSuper(super.equals(obj)).append(getJobId(), rhs.getJobId()).append(getArchiveId(), rhs.getArchiveId())
+				.append(getOriginalPath(), rhs.getOriginalPath()).append(getStatus(), rhs.getStatus()).append(isLargeFile(), rhs.isLargeFile()).isEquals();
 	}
 
 }

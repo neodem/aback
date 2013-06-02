@@ -23,5 +23,9 @@ public interface GlacierFileIO {
 	 * @return
 	 */
 	public String initiateDownloadRequest(String vaultName, String archiveId, String description);
+	
+	public void getFile(String vaultName, Path destination, String jobId);
+	
+	public void getLargeFile(String vaultName, Path destination, String jobId);
 
 }

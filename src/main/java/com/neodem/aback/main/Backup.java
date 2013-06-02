@@ -14,7 +14,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.neodem.aback.aws.glacier.GlacierFileIO;
 import com.neodem.aback.aws.glacier.GlacierFileIOException;
-import com.neodem.aback.aws.simpledb.MetaItemId;
+import com.neodem.aback.service.id.BackupFileId;
 import com.neodem.aback.service.id.IdService;
 import com.neodem.aback.service.scanner.ScannerService;
 import com.neodem.aback.service.tracker.TrackerMetaItem;
@@ -51,14 +51,16 @@ public class Backup {
 
 		for (Path absolutePath : filesToBackup.keySet()) {
 			Path relativePath = sourceRoot.relativize(absolutePath);
-			
 
-			MetaItemId fileId = idService.makeId(relativePath);
+			BackupFileId fileId = idService.makeId(relativePath);
 			if (fileId == null) {
 				log.warn("skipped since we couldn't make a fileId : " + absolutePath.toString());
 			} else {
 				Long fileSize = getFileSize(absolutePath);
 				BasicFileAttributes fileAtts = filesToBackup.get(absolutePath);
+				
+				//TODO I want to have each item that is backed up to have it's own unique id but
+				// I also want the tracker to not repeat files in the collection
 				if (trackerService.shouldBackup(vaultName, fileId, fileAtts, fileSize)) {
 					String archiveId;
 					try {
